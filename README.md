@@ -34,7 +34,7 @@ Icons work through the font used. Currently it's `Caskaydia Cove Nerd Font`, but
 4. hide the script so that if doesnt take up space on the taksbar
 
 ## Customization 
-Python is an easy language to read just open the `string.py` and read the Commons what the code does you can add and or remove stuff. If you want to change the color or something just change the hex code in the switch statement. If you want to change the order of something being displayed you can change that down by the write me variable declaration. Also if you want to change something like the fund being used you can change this in the `stringme_template.htm` (if you were to change something in the `stringme.htm`it would be overwritten as soon as you start the `stringme.py` again)
+Python is an easy language to read just open the `string.py` and read the Comments what the code does you can add and or remove stuff. If you want to change the color or something just change the hex (`#FF0000` e.g. this is red) in the switch statement for the case you need. If you want to change the order of something being displayed you can change that down by the write me variable declaration. Also if you want to change something like the font being used you can change this in the `stringme_template.htm` (if you were to change something in the `stringme.htm`it would be overwritten as soon as you start the `stringme.py` again)
 
 ### Things to improove (contributions are welcome!): 
  * more programs and websides to implement 
