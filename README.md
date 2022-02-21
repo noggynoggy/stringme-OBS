@@ -31,7 +31,7 @@ Icons work through the font used. Currently it's `Caskaydia Cove Nerd Font`, but
 ## To use it every time after the first:
 1. Run `stringme.py`
 3. Have Spotify.exe window activated (click on the window or on the taskbar icon) within ´`4` seconds of Step 1
-4. hide the scipt so that if doesnt take up space on the taksbar
+4. hide the script so that if doesnt take up space on the taksbar
 
 ## Customization 
 Python is an easy language to read just open the `string.py` and read the Commons what the code does you can add and or remove stuff. If you want to change the color or something just change the hex code in the switch statement. If you want to change the order of something being displayed you can change that down by the write me variable declaration. Also if you want to change something like the fund being used you can change this in the `stringme_template.htm` (if you were to change something in the `stringme.htm`it would be overwritten as soon as you start the `stringme.py` again)
