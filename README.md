@@ -34,7 +34,7 @@ Icons work through the font used. Currently it's `Caskaydia Cove Nerd Font`, but
 1. Make sure you have Python3 installed on your machine. Also you will need to install some packages with pip for python. If you dont know what that means look it up or maybe watch [this video](https://youtu.be/7snh_1Hf_TI). I'll just write down all packages you'll need: 
 3. Run OBS
 4. Run `stringme.py`
-5. Add a new source where you want it to be displayed. Choose Browser source. Check the local file checkbox. Navigate to where you saved the files from this repro and choose `stringme.htm` (Not `stringme_tamplate.htm`!). Delete all contents from the "Custom CSS" box. Check Reload by scene switch. Set the dimensions to ⇅`45` and ⇄`2000`. Click finish.
+5. Add a new source where you want it to be displayed. Choose Browser source. Check the local file checkbox. Navigate to where you saved the files from this repro and choose `stringme.htm` (Not `stringme_tamplate.htm`!). Set the dimensions to ⇅`70` and ⇄`2000`. Delete all contents from the "Custom CSS" box. Check " shutdown source when not visible". Check "Refresh browser when sceene becomes active".  Click OK.
 7. Alt drag the right side of the new source so the scrollbar is hidden. 
 8. If nothing is dispayed click reload on the browser scource and make sure the script is still running. 
 9. Hide `python.3.##.exe` (if you want) with AHK or like [this](https://answers.microsoft.com/en-us/windows/forum/all/how-can-i-hide-a-specific-program-in-the-system/f7f09999-9397-44e8-b1d0-792a49d3721b). 
