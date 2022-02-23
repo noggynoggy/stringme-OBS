@@ -50,3 +50,4 @@ Python is an easy language to read just open the `stringme.py` in an editor and 
 ### Things to improove (contributions are welcome!): 
  * more programs and websides to implement 
  * Due to the large size of the font the browser source "flickes" every so often because it reloads every second and the font file has to be loaded again. A way around that would be nice. 
+ * implement git branch stuff for VS Code
