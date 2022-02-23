@@ -2,7 +2,11 @@
 **A Script providing a way to show the currently active window and playing music live on screen. Using the windows window title and OBS' local-file browser scource.**
 
 ![Animation](https://user-images.githubusercontent.com/50501527/155385611-b177c4b7-c806-41e4-991a-e2631f4c02c5.gif)
-![Video](https://i.imgur.com/Py79I9r.mp4)
+
+
+https://user-images.githubusercontent.com/50501527/155391757-cb98cf47-36c1-4cd7-a91b-536dd2ecd4ef.mp4
+
+
 
 This is windows only. As of now the script is just configured to work with [Spotify-Premium-desktop](https://www.spotify.com/de/download/windows/) as music source.
 
