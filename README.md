@@ -11,20 +11,11 @@ Colored output and icons are currently implemented for:
 * Firefox
   - YouTube
   - Twitch 
-  - Wikipedia (+Wikiwand)
+  - Wikipedia + Wikiwand
 * Discord
 * Visual Studio Code
-  - .py
-  - .html
-  - .htm
-  - .java
-  - .ahk
-  - .json
-  - .ini
-  - .txt
-  - .js
-  - .css
-  - .sh
+  - Saved or Unsaved
+  - Extensions .py, .html, .htm, .java, .ahk, .json, .ini, .txt, .js, .css, .sh
 * Adobe Acrobat Reader
 * Microsoft Word, Excel, Powerpoint and OneNote
 * [Notepdas](https://github.com/JasonStein/Notepads) 
