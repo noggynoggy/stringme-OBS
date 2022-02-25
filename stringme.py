@@ -1,7 +1,8 @@
 from email.policy import default
 from multiprocessing.spawn import get_executable
+from shutil import ExecError
 from win32gui import GetWindowText, GetForegroundWindow
-import psutil, win32process, win32gui, re, time
+import psutil, win32process, win32gui, re, time, os
 
 by = "by" # the word displayed between Song and artist (this is for language support)
 on = "on" # the word displayed if the browser is on a known page (this is for language support)
@@ -106,11 +107,10 @@ def activefunc():
                     stractive = re.sub(r'(.*)??( - )+?Wikiwand', r'<span style="color:#d1cdb6"> Wikiwand: </span> \1', stractive)
                 case "Twitch" :
                     progvar = re.sub(r'Firefox:', r'Firefox ' + on + r' ', progvar)
-                    stractive = re.sub(r'(.*)??( - )+?Twitch', r'<span style="color:#9036ff"> Twitch: </span> \1', stractive)
-
-        case "Adobe Acrobat Reader DC (64-Bit)":
-            progvar = re.sub(r'(.*) - Adobe Acrobat Reader DC (64-Bit)', r'<span style="color:#ff6161"> Acrobat: </span>', stractive)
-            stractive = re.sub(r'(.*) - Adobe Acrobat Reader DC (64-Bit)', r'\1', stractive)
+                    stractive = re.sub(r'(.*)??( - )+?Twitch', r'<span style="color:#9036ff"> Twitch: </span> \1', stractive)                                
+        case "Adobe Acrobat Reader DC (64-bit)":
+            progvar = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'<span style="color:#ff6161"> Acrobat: </span>', stractive)
+            stractive = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'\1', stractive)
         case "Discord":
             progvar = re.sub(r'(.*) - Discord', r'<span style="color:#5865f1">ﭮ Discord: </span>', stractive)
             stractive = re.sub(r'(.*) - Discord', r'\1', stractive)
@@ -179,33 +179,42 @@ if(checkIfProcessRunning("Spotify.exe")):
     getSpotifyHWND() # sets spothwnd to one PID of "Spotify.exe"
 else:
     spothwnd = 0
-
+__path = re.sub(r'\\', "/", __file__[:-11]) # swaping backslashes for normal ones + 11 because stringme.py is 11 chars long
 def main():
-    while(checkIfProcessRunning("obs64.exe")):
-        # timevar = timefunc() # this is commented out by default, it is the call of the time/date function
-        for x in range(3):                      # ↓
-            # evry 10 sec
-            spotifyvar = spofitfyfunc(spothwnd)             
-            print('updated spotify')
+    try:
+        while(checkIfProcessRunning("obs64.exe")):
+            # timevar = timefunc() # this is commented out by default, it is the call of the time/date function
+            for x in range(3):                      # ↓
+                # evry 10 sec
+                spotifyvar = spofitfyfunc(spothwnd)             
+                print('updated spotify')
 
-            for y in range(10):                 # these for-loops + the time.sleep(1) determine how fast the program runs. If you change it, dont forget to change the miliseconds in stringme_tamplate.htm in the <script> tags (default is 1000} 
-                time.sleep(1)                   # here time.sleep(0.5) and 500 in stringme_tamplate.htm would speed up the program 2x in comparison to default      
-                actvartuple = activefunc() 
-                print('updated active')
+                for y in range(10):                 # these for-loops + the time.sleep(1) determine how fast the program runs. If you change it, dont forget to change the miliseconds in stringme_tamplate.htm in the <script> tags (default is 1000} 
+                    time.sleep(1)                   # here time.sleep(0.5) and 500 in stringme_tamplate.htm would speed up the program 2x in comparison to default      
+                    actvartuple = activefunc() 
+                    print('updated active')
 
-                # The following is what is actually beeing dispayed. (is is placed in the paragraph tags (<p></p>) in the stringme.html)
-                # you can change the order, or add some spaces or characters to seperate stuff.
-                # 
-                writeme =  spotifyvar + str(actvartuple[0]) + str(actvartuple[1])
+                    # The following is what is actually beeing dispayed. (is is placed in the paragraph tags (<p></p>) in the stringme.html)
+                    # you can change the order, or add some spaces or characters to seperate stuff.
+                    # 
+                    writeme =  spotifyvar + str(actvartuple[0]) + str(actvartuple[1])
 
-                f = open("stringme_tamplate.htm", "r", encoding="utf-8")
-                fstring = f.read()
-                f.close()
-        
-                f = open("stringme.htm", "w", encoding="utf-8")
-                fstring = re.sub(r'<p class="n">(.*)</p>', r'<p class="n">' + writeme + r'</p>', fstring)
-                f.write(fstring)
-                f.close()
+
+
+                    f = open(__path + "assets/stringme_tamplate.htm", "r", encoding="utf-8") # somehow it crashes here without literal path if not run in vs code on my machine
+                    fstring = f.read()
+                    f.close()
+
+            
+                    f = open(__path + "stringme.htm", "w", encoding="utf-8")
+                    fstring = re.sub(r'<p class="n">(.*)</p>', r'<p class="n">' + writeme + r'</p>', fstring)
+                    f.write(fstring)
+                    f.close()
+    except Exception as e:
+        f = open("errorlog.txt", "a")
+        f.write('\n')
+        f.write(e)
+        f.close()               
 
 if __name__ == "__main__":
     main() 
