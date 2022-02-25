@@ -15,7 +15,7 @@ Colored output and icons are currently implemented for:
 * Discord
 * Visual Studio Code
   - Saved or Unsaved
-  - Extensions .py, .html, .htm, .java, .ahk, .json, .ini, .txt, .js, .css, .sh
+  - Icons for extensions .py, .html, .htm, .java, .ahk, .json, .ini, .txt, .js, .css, .sh
 * Adobe Acrobat Reader
 * Microsoft Word, Excel, Powerpoint and OneNote
 * [Notepdas](https://github.com/JasonStein/Notepads) 
