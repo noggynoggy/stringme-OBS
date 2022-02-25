@@ -2,6 +2,7 @@
 **A way to show what you're actively doing + now playing in one line in OBS.**
 
 [![Watch the video](https://i.imgur.com/24l747X.png)](https://youtu.be/4zdsZl--wLY)
+
 (Click me I'm a Video!)
 
 This is windows only. As of now the script is just configured to work with [Spotify-Premium-desktop](https://www.spotify.com/de/download/windows/) as music source.
