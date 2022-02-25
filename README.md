@@ -1,10 +1,7 @@
 # stringme-OBS
 **A way to show what you're actively doing + now playing in one line in OBS.**
 
-![Animation](https://user-images.githubusercontent.com/50501527/155385611-b177c4b7-c806-41e4-991a-e2631f4c02c5.gif)
-
-
-https://user-images.githubusercontent.com/50501527/155391757-cb98cf47-36c1-4cd7-a91b-536dd2ecd4ef.mp4
+[![Watch the video](https://i.imgur.com/24l747X.png)](https://youtu.be/4zdsZl--wLY)
 
 
 
