@@ -1,5 +1,5 @@
 # stringme-OBS
-**A Script providing a way to show the currently active window and playing music live on screen. Using the windows window title and OBS' local-file browser scource.**
+**A way to show what you're actively doing + now playing in one line in OBS.**
 
 ![Animation](https://user-images.githubusercontent.com/50501527/155385611-b177c4b7-c806-41e4-991a-e2631f4c02c5.gif)
 
