@@ -4,6 +4,8 @@ from shutil import ExecError
 from win32gui import GetWindowText, GetForegroundWindow
 import psutil, win32process, win32gui, re, time, os
 
+from pynput.keyboard import Key, Controller
+
 by = "by" # the word displayed between Song and artist (this is for language support)
 on = "on" # the word displayed if the browser is on a known page (this is for language support)
 
@@ -179,33 +181,42 @@ if(checkIfProcessRunning("Spotify.exe")):
     getSpotifyHWND() # sets spothwnd to one PID of "Spotify.exe"
 else:
     spothwnd = 0
+   
 __path = re.sub(r'\\', "/", __file__[:-11]) # swaping backslashes for normal ones + 11 because stringme.py is 11 chars long
 def main():
+    spotifyold = "" # empty string
+    keyboard = Controller() # makes a keyboard for key emulation
     try:
         while(checkIfProcessRunning("obs64.exe")):
             # timevar = timefunc() # this is commented out by default, it is the call of the time/date function
             for x in range(3):                      # ↓
                 # evry 10 sec
-                spotifyvar = spofitfyfunc(spothwnd)             
-                print('updated spotify')
+                spotifyvar = spofitfyfunc(spothwnd)
+                if(spotifyvar == spotifyold):
+                    print('spotify remains unchanged')
+                else:
+                    spotifyold = spotifyvar
+                    print('updated spotify')
+                    keyboard.press(Key.f13) # this is for telling OBS when spotify changed (you may do with that what youw want (I use it to display the cover image with the plugin Tuna))
+                    time.sleep(0.05)
+                    keyboard.release(Key.f13)
+                            
+                
 
-                for y in range(10):                 # these for-loops + the time.sleep(1) determine how fast the program runs. If you change it, dont forget to change the miliseconds in stringme_tamplate.htm in the <script> tags (default is 1000} 
+                for y in range(5):                 # these for-loops + the time.sleep(1) determine how fast the program runs. If you change it, dont forget to change the miliseconds in stringme_tamplate.htm in the <script> tags (default is 1000} 
                     time.sleep(1)                   # here time.sleep(0.5) and 500 in stringme_tamplate.htm would speed up the program 2x in comparison to default      
                     actvartuple = activefunc() 
                     print('updated active')
-
                     # The following is what is actually beeing dispayed. (is is placed in the paragraph tags (<p></p>) in the stringme.html)
                     # you can change the order, or add some spaces or characters to seperate stuff.
                     # 
                     writeme =  spotifyvar + str(actvartuple[0]) + str(actvartuple[1])
 
-
-
                     f = open(__path + "assets/stringme_tamplate.htm", "r", encoding="utf-8") # somehow it crashes here without literal path if not run in vs code on my machine
                     fstring = f.read()
                     f.close()
 
-            
+
                     f = open(__path + "stringme.htm", "w", encoding="utf-8")
                     fstring = re.sub(r'<p class="n">(.*)</p>', r'<p class="n">' + writeme + r'</p>', fstring)
                     f.write(fstring)
