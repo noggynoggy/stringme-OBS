@@ -8,12 +8,13 @@
         "musicArtist": "#00ff26",
         "musicTitle": "#00ff26",
         "musicWordColor": "#50a65c",
-        "musicIconColor": "#50a65c",
+        "musicIconColor": "#00FF26",
         
         "Firefox": "#ff5405",
         "AdobeAcrobatReaderDC": "#ff6161",
         "Discord": "#5865f1",
         "VSCode": "#21a1e4",
+        "VSCodeUnsaved": "#CECECE",
         "IntelliJIdeaCommunity": "",
         "MSOneNote": "#ca64ea",
         "MSWord": "#4d79ff",
@@ -24,22 +25,31 @@
         "Python": "#ebff3b",
         "Thunderbird": "#0898ff",
         "OBS": "#8f8f8f",
+        "PowerShellCore": "#006EFF",
+        "Python3": "#fff945",
+        "GIMP": "#fff945",
+        "Paint": "#00C050",
 
-        "YouTube": "#ff2e2e",
+        "YouTube": "#FF6262",
         "Wikipedia": "#d1cdb6",
         "Wikiwand": "#d1cdb6",
-        "Twitch": "#9036ff",
+        "Twitch": "#D2AEFF",
         "IMDb": "#d9ff00",
-        "Netflix": "#ff2e43",
-        "HSMW": "#0084ff"
+        "Netflix": "#FF4658",
+        "HSMW": "#0084ff",
+        "StackOverflow": "#d1cdb6",
+        "Google": "#337AFF"
+    
     },
     "strings": {
         "on": "auf",
-        "musicWord": "von",
-        "musicIcon": "",
+        "musicWord": " von ",
+        "musicIcon": " ",
         "musicActiveDivider": " ",
         "musicSource": "Spotify.exe",
-        "musicIdle": "Spotify Premium"
+        "musicIdle": "Spotify Premium",
+        "VSCodeUnsaved": "ungespeichert",
+        "googleSearchInYourLanguage": "Google Suche"
     },
     "time": {
         "baseTickRate": 1,
