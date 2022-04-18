@@ -1,5 +1,9 @@
 # stringme-OBS
-**A Script providing a way to show the currently active window and playing music live on screen. Using the windows window title and OBS' local-file browser scource.**
+**A way to show what you're actively doing + now playing in one line in OBS.**
+
+[![Watch the video](https://i.imgur.com/24l747X.png)](https://youtu.be/4zdsZl--wLY)
+
+(↑↑ Click me I'm a Video!)
 
 This is windows only. As of now the script is just configured to work with [Spotify-Premium-desktop](https://www.spotify.com/de/download/windows/) as music source.
 
@@ -7,23 +11,19 @@ Colored output and icons are currently implemented for:
 * Firefox
   - YouTube
   - Twitch 
-  - Wikipedia (+Wikiwand)
+  - Wikipedia + Wikiwand
+  - IMDb
+  - HSMW
+  - Netflix
 * Discord
 * Visual Studio Code
-  - .py
-  - .html
-  - .htm
-  - .java
-  - .ahk
-  - .json
-  - .ini
-  - .txt
-  - .js
-  - .css
-  - .sh
+  - Saved or Unsaved
+  - Icons for extensions .py, .html, .htm, .java, .ahk, .json, .ini, .txt, .js, .css, .sh
 * Adobe Acrobat Reader
 * Microsoft Word, Excel, Powerpoint and OneNote
 * [Notepdas](https://github.com/JasonStein/Notepads) 
+* Joplin
+* Thunderbird
 
 If something isn't listed here it will still be dispayed but not with color and or icon.
 
@@ -45,8 +45,4 @@ Icons work through the font used. Currently it's `Caskaydia Cove Nerd Font`, but
 3. Hide `python.3.##.exe` (if you want)
 
 ## Customization 
-Python is an easy language to read just open the `stringme.py` in an editor and read the Comments what the code does you may add, edit or remove stuff. If you want to change the color or something just change the hex (`#FF0000` e.g. this is red) in the `# ENDSTRINGS Switch Statement` for the case you need. If you want to change the order of something being displayed you can change that down by the write me variable declaration. Also if you want to change something like the font being used you can change this in the `stringme_template.htm` (if you were to change something in the `stringme.htm`it would be overwritten as soon as you start the `stringme.py` again)
-
-### Things to improove (contributions are welcome!): 
- * more programs and websides to implement 
- * Due to the large size of the font the browser source "flickes" every so often because it reloads every second and the font file has to be loaded again. A way around that would be nice. 
+wip
