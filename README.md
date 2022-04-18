@@ -25,10 +25,8 @@ Colored output and icons are currently implemented for:
 * Joplin
 * Thunderbird
 
+wip...
 If something isn't listed here it will still be dispayed but not with color and or icon.
-
-## IF YOU DONT SEE ICONS
-Icons work through the font used. Currently it's `Caskaydia Cove Nerd Font`, but every font from [Nerd Fonts](https://www.nerdfonts.com/font-downloads) should work. 
 
 ## To use it in OBS (fist time):
 1. Make sure you have Python3 installed on your machine. Also you will need to install some packages with pip for python. If you dont know what that means look it up or maybe watch [this video](https://youtu.be/7snh_1Hf_TI). I'll just write down all packages you'll need: 
