@@ -2,8 +2,10 @@ from win32gui import GetWindowText, GetForegroundWindow
 from pynput.keyboard import Key, Controller
 import psutil, win32process, win32gui, re, time, json
 
-with open('settigns.json', "r", encoding="utf-8") as settingsString: # geitng data from settings.json 
-    settings = json.load(settingsString)                             # and implementing it as settings dict 
+# geitng data from settings.json
+# and implementing it as settings dict 
+with open('assets/settigns.json', "r", encoding="utf-8") as settingsString:  
+    settings = json.load(settingsString)                                    
 
 def checkIfProcessRunning(processName):
     #Iterate over the all the running process
