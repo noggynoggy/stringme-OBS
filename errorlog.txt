@@ -1,0 +1,33 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local variable 'spotifyHWND' referenced before assignment
+spofitfyfunc() missing 1 required positional argument: 'doSpotify'
+spofitfyfunc() missing 1 required positional argument: 'doSpotify'
+spofitfyfunc() missing 1 required positional argument: 'doSpotify'
+spofitfyfunc() missing 1 required positional argument: 'doSpotify'
+spofitfyfunc() missing 1 required positional argument: 'doSpotify'
+spofitfyfunc() missing 1 required positional argument: 'doMusic'
+'musicIdle'
+'musicIdle'
+local variable 'title' referenced before assignment
+local variable 'title' referenced before assignment
+local variable 'title' referenced before assignment
+string index out of range
+local variable 'musicToupleOld' referenced before assignment
+local variable 'musicToupleOld' referenced before assignment
+'YouTube'
+'YouTube'
+'YouTube'
+'YouTube'

@@ -1,0 +1,48 @@
+{
+    "showMusicByDefault": true,
+    "fontUsed": "assets/casnf.woff2",
+    "order": "%M%A",
+    "colors": {
+        "base": "#FFFFFF",
+
+        "musicArtist": "#00ff26",
+        "musicTitle": "#00ff26",
+        "musicWordColor": "#50a65c",
+        "musicIconColor": "#50a65c",
+        
+        "Firefox": "#ff5405",
+        "AdobeAcrobatReaderDC": "#ff6161",
+        "Discord": "#5865f1",
+        "VSCode": "#21a1e4",
+        "IntelliJIdeaCommunity": "",
+        "MSOneNote": "#ca64ea",
+        "MSWord": "#4d79ff",
+        "MSExcel": "#2aad2a",
+        "MSPowerPoint": "#ffb300",
+        "Notepads": "#ff002b",
+        "Joplin": "#007bff",
+        "Python": "#ebff3b",
+        "Thunderbird": "#0898ff",
+        "OBS": "#8f8f8f",
+
+        "YouTube": "#ff2e2e",
+        "Wikipedia": "#d1cdb6",
+        "Wikiwand": "#d1cdb6",
+        "Twitch": "#9036ff",
+        "IMDb": "#d9ff00",
+        "Netflix": "#ff2e43",
+        "HSMW": "#0084ff"
+    },
+    "strings": {
+        "on": "auf",
+        "musicWord": "von",
+        "musicIcon": "",
+        "musicActiveDivider": " ",
+        "musicSource": "Spotify.exe",
+        "musicIdle": "Spotify Premium"
+    },
+    "time": {
+        "baseTickRate": 1,
+        "musicTickRate": 5
+    }
+}
