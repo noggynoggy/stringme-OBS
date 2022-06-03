@@ -11,7 +11,7 @@
         "musicIconColor": "#00FF26",
         
         "Firefox": "#ff5405",
-        "AdobeAcrobatReaderDC": "#ff6161",
+        "AdobeAcrobatReaderDC": "#FF1414",
         "Discord": "#5865f1",
         "VSCode": "#21a1e4",
         "VSCodeUnsaved": "#CECECE",
@@ -29,11 +29,12 @@
         "Python3": "#fff945",
         "GIMP": "#fff945",
         "Paint": "#00C050",
+        "Obsidian": "#A657B2",
 
-        "YouTube": "#FF6262",
+        "YouTube": "#FF0000",
         "Wikipedia": "#d1cdb6",
         "Wikiwand": "#d1cdb6",
-        "Twitch": "#D2AEFF",
+        "Twitch": "#8F33FF",
         "IMDb": "#d9ff00",
         "Netflix": "#FF4658",
         "HSMW": "#0084ff",
@@ -54,5 +55,11 @@
     "time": {
         "baseTickRate": 1,
         "musicTickRate": 5
+    },
+    "maxLenghts": {
+        "cutMusicTitle": true,
+        "cutActive": true,
+        "musicTitle": "30",
+        "totalLength": "200"
     }
 }

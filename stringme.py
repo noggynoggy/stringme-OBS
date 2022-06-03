@@ -1,6 +1,9 @@
+from ast import Global
 from win32gui import GetWindowText, GetForegroundWindow
+from datetime import datetime
 from pynput.keyboard import Key, Controller
-import psutil, win32process, win32gui, re, time, json
+from pynput import keyboard
+import psutil, win32process, win32gui, re, time, json, multiprocessing
 
 # This is the path the fil is run at. 
 # But one has to swap backslashes for normal ones. 
@@ -66,20 +69,31 @@ def getMusicTouple(musicHwnd):
         # if you want to keep the brackets
         # it often gets realy long with them (see example)
         title = re.sub(r'(.*)\(.*\)(.*)', r'\1\2', title)                                   #.. Speak to Me
+        title = re.sub(r'(.*)\[.*\](.*)', r'\1\2', title)                                   # same idea with []
 
-        # This is just for the Terminal. 
+            
+        # Cut lenghts futher. If settings are set.
+        # Also maybe one can just cut everything after  " - " or " | "
+        if settings['maxLenghts']['cutMusicTitle']:
+            if len(title) > int(settings['maxLenghts']['musicTitle']):
+                if " - " in title or " | " in title:
+                    title = title[:title.index(" - ")]
+                else:
+                    title = title[:int(settings['maxLenghts']['musicTitle'])] + "…"
+
+        # This is just for Console output. 
         # It shows whats playing.
         print('')
         print(f"Artist: {artist}")
         print(f"Title: {title}")
-        print('')                           
+        print('')
 
         # The next 2 lines "inject" HTML/CSS in the string. 
         # later it will be written to a htm file,
         # so the colors (set in settings.json) will be displayed. 
         artist = '<span style="color:' + settings['colors']['musicArtist'] + '">' + artist + '</span>' 
         title = '<span style="color:' + settings['colors']['musicTitle'] + '">' + title + '</span>'
-    
+             
         # returns touple
         return title, artist, musicWindowTitle
 
@@ -105,10 +119,6 @@ def getActiveTouple(musicToupleOld):
     # All of these steps are done with RegEx Substitution.
     # There is also in the same step HTML/CSS injected, for colors.
 
-    #old activeWindow: OBS 27.2.4 (64-bit, windows) - Profile: Nx2 - Scenes: V-Cam
-    #new activeWindow: <span style="color:#8f8f8f"> OBS</span>
-    activeWindow = re.sub("^(OBS ).*", r'<span style="color:' + settings['colors']['OBS'] + r'"> OBS</span>', activeWindow)
-
     # This removes a wired rtm mark https://www.compart.com/de/unicode/U+200E
     # that casued problems (occurs with notepads) 
     activeWindow = re.sub('‎', '', activeWindow)
@@ -124,7 +134,14 @@ def getActiveTouple(musicToupleOld):
     # For example Reddit has these in the title
     activeWindow = re.sub(r'(.*)\([0-9]{1,3}\) (.*)', r'\1\2', activeWindow)   #.. The Video Title - YouTube — Mozilla Firefox
 
-   
+    # cahnges PowerPoint-Bildschirmpräsentation and PowerPoint-Referentenansicht to just "Powerpoint"
+    # also swaps the order becuse pwpnt has it backwards for some reason
+    if re.search("PowerPoint-Bildschirmpräsentation", activeWindow):
+        activeWindow = re.sub(r'PowerPoint-Bildschirmpräsentation  -  (.*)', r'\1 - PowerPoint', activeWindow)
+    activeWindow = re.sub(r'(PowerPoint-Referentenansicht)',r'PowerPoint', activeWindow)
+
+
+
     # The following stuff is to seperate the Program out of the window title.
     # Many programs have their name at the end of the Window-Title. For example
     # qna - Discord
@@ -139,6 +156,8 @@ def getActiveTouple(musicToupleOld):
     # This does all the programs reordering (splitting into programPrefix)and HTML/CSS injecting 
     # For Browsers it has a nested machcase for websides
     # For IDEs/Editors it has a nested machcase for filetypes  
+
+
     match endString:   
         case "Mozilla Firefox":
             programPrefix = re.sub(r'(.*) — Mozilla Firefox', r'<span style="color:' + settings['colors']['Firefox'] + r'"> Firefox:</span> ', activeWindow)  #.. <span style="color:#hexfromsettings"> Firefox:</span> 
@@ -184,9 +203,8 @@ def getActiveTouple(musicToupleOld):
                             activeWindow = re.sub(r'(.*)??( \| )+?', r'<span style="color:' + settings['colors']['HSMW'] + r'"> HSMW:</span> \1', activeWindow) 
                         case "Stack Overflow":
                             programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( \ )+?Stack Overflow', r'<span style="color:' + settings['colors']['StackOverflow'] + r'">  Stack Overflow:</span> \1', activeWindow)  
-                        case _: pass
-
+                            activeWindow = re.sub(r'(.*)??( - )+?Stack Overflow', r'<span style="color:' + settings['colors']['StackOverflow'] + r'">  Stack Overflow:</span> \1', activeWindow)  
+                        case _: pass 
         case "Adobe Acrobat Reader DC (64-bit)":
             programPrefix = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'<span style="color:' + settings['colors']['AdobeAcrobatReaderDC'] + r'"> Acrobat:</span> ', activeWindow)
             activeWindow = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'\1', activeWindow)
@@ -249,34 +267,95 @@ def getActiveTouple(musicToupleOld):
             programPrefix = re.sub(r'(.*) - Paint', r'<span style="color:' + settings['colors']['Paint'] + r'"> Paint:</span> ', activeWindow)
             activeWindow = re.sub(r'(.*) - Paint', r'\1', activeWindow)
         case _: pass
-     
-    if programPrefix == activeWindow: # for programs that dont say what programPrefix they are in the window title or programs not yet implented 
+    
+    # Sets variables to "" 
+    # for programs that dont say what they 
+    # are in the window title 
+    # or programs not yet implented in the swich case below
+    if programPrefix == activeWindow: 
         programPrefix = ""
     if activeWindow == musicToupleOld:
         activeWindow = ""
-     
+
+    # Cut lenghts futher. If settings are set.
+    if settings['maxLenghts']['cutActive']:
+        stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0]) + len(settings['strings']['musicWord']) + len(musicToupleOld[1]) + len(settings['strings']['musicActiveDivider'])
+        if int(settings['maxLenghts']['totalLength']) < (len(activeWindow) + stuffBeforeActiveLenght):
+            print("Active Cut.")
+            activeWindow = activeWindow[:(int(settings['maxLenghts']['totalLength']) - stuffBeforeActiveLenght)] + "…"
+
     # Some Programs only have the Program in the Title 
     # So they are beautifyed here 
+    activeWindow = re.sub(r'^(OBS ).*', r'<span style="color:' + settings['colors']['OBS'] + r'"> OBS</span>', activeWindow)
     activeWindow = re.sub('Joplin', '<span style="color:' + settings['colors']['Joplin'] + '"> Joplin</span>', activeWindow)
-    activeWindow = re.sub('Mozilla Firefox', '<span style="color:' + settings['colors']['Firefox'] + '"> Firefox</span>', activeWindow)
-    activeWindow = re.sub('PowerShell', '<span style="color:' + settings['colors']['PowerShellCore'] + '"> PowerShell Core</span>', activeWindow) 
+    activeWindow = re.sub('Mozilla Firefox', '<span style="color:' + settings['colors']['Firefox'] + '"> Firefox</span>', activeWindow) # start page
+    activeWindow = re.sub('PowerShell Core', '<span style="color:' + settings['colors']['PowerShellCore'] + '"> PowerShell Core</span>', activeWindow) 
     activeWindow = re.sub(r'(Select )?Python 3.[0-9][0-9]? \(64-bit\)', r'<span style="color:' + settings['colors']['Python3'] + r'"> Python 3</span>', activeWindow) 
     activeWindow = re.sub('GNU Image Manipulation Program', '<span style="color:' + settings['colors']['GIMP'] + '"> GIMP</span>', activeWindow)
     activeWindow = re.sub('python3\.10\.exe', '<span style="color:' + settings['colors']['Python3'] + '"> Python 3</span>', activeWindow)
     activeWindow = re.sub('Spotify Premium', '<span style="color:' + settings['colors']['musicIconColor'] + '">' + settings['strings']['musicIcon'] + settings['strings']['musicSource'][:-4] + '</span>', activeWindow)
+    activeWindow = re.sub(r'.* - Obsidian v[0-9]+\.[0-9]+\.[0-9]+', '<span style="color:' + settings['colors']['Obsidian'] + '"> Obsidian</span>', activeWindow)
     
     return programPrefix, activeWindow, activeWindowText # returns touple 
 
-def main(): 
+# https://pynput.readthedocs.io/en/latest/keyboard.html
+def hotkey(doActive):
+    # KeyboardListener = keyboard
+    # COMBIANTIONS = [
+    #     # (keyboard.Key.shift, keyboard.KeyCode.from_vk(VK.F20))
+    #     {KeyboardListener.Key.shift, KeyboardListener.KeyCode(vk=127)},
+    #     # {KeyboardListener.Key.shift, KeyboardListener.KeyCode(char='A')}
+    # ]
+    # current = set()
+    # def execute(doActive):
+    #     if doActive.value:
+    #         doActive.value = False
+    #         print('Music-only-mode: ON')
+    #     else:
+    #         doActive.value = True
+    #         print('Music-only-mode: OFF')
 
+    # def on_press(key):
+    #     if any([key in COMBO for COMBO in COMBIANTIONS]):
+    #         current.add(key)
+    #         if any(all(k in current for k in COMBO) for COMBO in COMBIANTIONS):
+    #                 execute(doActive)
+
+    # def on_release(key):
+    #     if any([key in COMBO for COMBO in COMBIANTIONS]):
+    #         current.remove(key)
+
+    # with KeyboardListener.Listener(on_press=on_press, on_release=on_release) as listener:
+    #    listener.join()
+
+    def on_activate():
+        if doActive.value:
+            doActive.value = False
+            print('Music-only-mode: ON')
+        else:
+            doActive.value = True
+            print('Music-only-mode: OFF')
+
+    def for_canonical(f):
+        return lambda k: f(l.canonical(k))
+
+    hotkey = keyboard.HotKey(
+        keyboard.HotKey.parse('<shift>+<127>'),
+        on_activate)
+    with keyboard.Listener(
+            on_press=for_canonical(hotkey.press),
+            on_release=for_canonical(hotkey.release)) as l:
+        l.join()
+
+def main(doActive): 
     # Set unused Strings empty to initialize
     musicIcon = title = musicWord = artist = musicToupleOld  = musicActiveDivide = programPrefix = activeWindow = musicWindowTitle = ""
 
     # This makes a keyboard for key emulation 
     # This will be used later to tell OBS that something happened through the use of Hotkeys
-    keyboard = Controller() 
+    KeyboardTyper = Controller() 
 
-            
+
     # CSS styling is "injected" for the musicIcon and the musicWord,
     # so that colors are there
     musicWord = '<span style="color:'+ settings['colors']['musicWordColor'] + '">' + settings['strings']['musicWord'] + '</span>'
@@ -284,7 +363,6 @@ def main():
 
     # initialzes musicActiveDivide
     musicActiveDivide = settings['strings']['musicActiveDivider'] 
-
 
 
     # This is to determine if the script is to display Music Info
@@ -307,9 +385,10 @@ def main():
         musicToupleOld = musicWord = musicIcon = musicActiveDivide = "" 
 
 
-    # This is the loop that Runns all the time.
+    # This is the loop that runns all the time.
     try:
         while(True):
+
             if doMusic:
                 # sets musicTouple to the current (Artist, Title)
                 musicTouple = getMusicTouple(musicHWND)
@@ -348,13 +427,13 @@ def main():
                     # You may do with that what youw want.
                     # I use it to display the cover image of the song with an OBS plugin called Tuna.
                     # It presses RAlt+F15
-                    keyboard.press(Key.alt_r)   
+                    KeyboardTyper.press(Key.alt)   
                     time.sleep(0.05)            
-                    keyboard.press(Key.f15)     
+                    KeyboardTyper.press(Key.f15)     
                     time.sleep(0.05)            
-                    keyboard.release(Key.f15)   
+                    KeyboardTyper.release(Key.f15)   
                     time.sleep(0.05)            
-                    keyboard.release(Key.alt_r) 
+                    KeyboardTyper.release(Key.alt) 
 
                     print('Music Updated.')
             else:
@@ -370,11 +449,16 @@ def main():
                 time.sleep(settings['time']['baseTickRate'])    
                 # This is the same thing as up there the getMusicTouple
                 # but with Active this time. 
-                activeTouple = getActiveTouple(musicToupleOld) 
-                programPrefix = activeTouple[0]
-                activeWindow = activeTouple[1]
-                activeWindowTile = activeTouple[2]
-                
+                if doActive.value:
+                    activeTouple = getActiveTouple(musicToupleOld)
+                    programPrefix = activeTouple[0]
+                    activeWindow = activeTouple[1]
+                    activeWindowTile = activeTouple[2]
+                else:
+                    programPrefix = ""
+                    activeWindow = ""
+                    activeWindowTile = "Active deactivated"
+
                 # This is so that if you focus the 
                 # Music Exe, yone only sees the music
                 # otherwise one chould see Music "twice"
@@ -406,13 +490,25 @@ def main():
                 f.close() 
 
     except Exception as e:
-        f = open("errorlog.txt", "a")
-        f.write('\n')
-        f.write(str(e))
+        f = open("assets/errorlog.txt", "a")
+        f.write(str(datetime.now()) + "\n" + str(e))
+        f.write('\n\n')
         f.close()               
 
 if __name__ == "__main__":
-    main()
+
+    print('Music-only-mode: OFF')
+    doActive = multiprocessing.Value('b', True) 
+
+    pServer = multiprocessing.Process(target=main,args=[doActive])
+    pHotKey = multiprocessing.Process(target=hotkey,args=[doActive])
+
+    pServer.start()
+    pHotKey.start()
+
+    pServer.join()
+    pHotKey.join()
+    
 
 
 
