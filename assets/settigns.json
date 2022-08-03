@@ -40,26 +40,26 @@
         "HSMW": "#0084ff",
         "StackOverflow": "#d1cdb6",
         "Google": "#337AFF"
-    
     },
     "strings": {
-        "on": "auf",
+        "on": " auf ",
         "musicWord": " von ",
         "musicIcon": " ",
         "musicActiveDivider": " ",
         "musicSource": "Spotify.exe",
         "musicIdle": "Spotify Premium",
         "VSCodeUnsaved": "ungespeichert",
-        "googleSearchInYourLanguage": "Google Suche"
+        "googleSearchInYourLanguage": "Google Suche",
+        "musicOnlyModeHotKey": "<shift>+<127>"
     },
     "time": {
         "baseTickRate": 1,
         "musicTickRate": 5
     },
-    "maxLenghts": {
+    "maxLengths": {
         "cutMusicTitle": true,
         "cutActive": true,
         "musicTitle": "30",
-        "totalLength": "200"
+        "totalLength": "125"
     }
 }

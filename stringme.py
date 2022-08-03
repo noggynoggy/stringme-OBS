@@ -1,9 +1,10 @@
 from ast import Global
+import os
 from win32gui import GetWindowText, GetForegroundWindow
 from datetime import datetime
 from pynput.keyboard import Key, Controller
 from pynput import keyboard
-import psutil, win32process, win32gui, re, time, json, multiprocessing
+import psutil, win32process, win32gui, re, time, json, multiprocessing, textwrap
 
 # This is the path the fil is run at. 
 # But one has to swap backslashes for normal ones. 
@@ -55,10 +56,9 @@ def getMusicTouple(musicHwnd):
     # Artist - Title
     # The re.sub lines are here to cut the musicWindowTitle to format
     # and split it into the variables artist and title
-    # the comments to the side stering with #.. are an example what happens to a string ao each step.
+    # the comments to the side stering with #.. are an example what happens to a string at each step.
     musicWindowTitle = GetWindowText(musicHwnd)                                             #.. Amy Lee - Speak to Me (From "Voice from the Stone" Original Motion Picture Soundtrack)
     if musicWindowTitle == settings['strings']['musicIdle'] or musicWindowTitle == "":
-        print("\nNothing is currently playing.\n")
         return "", "", ""
     else:   
         artist = re.sub(r'^(.*?) - .*', r'\1', musicWindowTitle)                            #.. Amy Lee
@@ -69,24 +69,19 @@ def getMusicTouple(musicHwnd):
         # if you want to keep the brackets
         # it often gets realy long with them (see example)
         title = re.sub(r'(.*)\(.*\)(.*)', r'\1\2', title)                                   #.. Speak to Me
-        title = re.sub(r'(.*)\[.*\](.*)', r'\1\2', title)                                   # same idea with []
+        title = re.sub(r'(.*)\[.*\](.*)', r'\1\2', title)                                   # same idea with [] Brackets
 
             
-        # Cut lenghts futher. If settings are set.
-        # Also maybe one can just cut everything after  " - " or " | "
-        if settings['maxLenghts']['cutMusicTitle']:
-            if len(title) > int(settings['maxLenghts']['musicTitle']):
+        # Cut title further if its longer than the set maxLength.
+        # Try cuting everything after  " - " or " | ", if its still too long
+        # just cut after the in settings.json set length
+        if settings['maxLengths']['cutMusicTitle']:
+            if len(title) > int(settings['maxLengths']['musicTitle']):
                 if " - " in title or " | " in title:
                     title = title[:title.index(" - ")]
-                else:
-                    title = title[:int(settings['maxLenghts']['musicTitle'])] + "…"
+                if len(title) > int(settings['maxLengths']['musicTitle']):
+                    title = title[:int(settings['maxLengths']['musicTitle'])] + "…"
 
-        # This is just for Console output. 
-        # It shows whats playing.
-        print('')
-        print(f"Artist: {artist}")
-        print(f"Title: {title}")
-        print('')
 
         # The next 2 lines "inject" HTML/CSS in the string. 
         # later it will be written to a htm file,
@@ -97,11 +92,10 @@ def getMusicTouple(musicHwnd):
         # returns touple
         return title, artist, musicWindowTitle
 
-def getActiveTouple(musicToupleOld):
-    # This function is to return currently activated window.
+def getActiveTouple(musicToupleOld, doMusicRightNow):
+    # This function is to return stuff related to the currently activated window.
     # (The Active window is the one "marked" on the taskbar)
-    # It not just returns the Window Title but reorders the content and
-    # "beautifies" it by "injecting" HTML/CSS and icons in the string.
+    # It also reorders and "beautifies" by "injecting" HTML/CSS and icons in the strings.
     # Colors just work with normal hexcodes (settings.json)
 
     # Icons work with using some obscure UniCode symbols with a font that changes these to symbols.
@@ -110,66 +104,84 @@ def getActiveTouple(musicToupleOld):
     # The font you set in settings.json will not change the icons. 
     # The Icons allways use assets\casnf.woff2.  
 
-    # Sets activeWindow to the active window Title (String)
-    activeWindow = GetWindowText(GetForegroundWindow()) 
-    activeWindowText = activeWindow                    
+    # Comments staring with #.. are examples what happens at each line
+
+    # Sets active to the active window Title (String)
+    active = GetWindowText(GetForegroundWindow()) 
+    activeWindowTextUntouched = active                    
 
     # Now to the reordering and beautifying.
-    # First there are some general things that i just "cut short" 
+    # First there are some general things that I just "cut short" 
     # All of these steps are done with RegEx Substitution.
     # There is also in the same step HTML/CSS injected, for colors.
 
-    # This removes a wired rtm mark https://www.compart.com/de/unicode/U+200E
+    # This removes a wierd rtm mark https://www.compart.com/de/unicode/U+200E
     # that casued problems (occurs with notepads) 
-    activeWindow = re.sub('‎', '', activeWindow)
+    active = re.sub('‎', '', active)
 
     # removes unesserary complication with UNICODE
-    activeWindow = re.sub('–', '-', activeWindow) 
+    active = re.sub('–', '-', active) 
 
     # Removes path from No-Name programs
-    # (Programs with no defined Window-Title have the Path as Title) 
-    activeWindow = re.sub(r'^([A-Z]:)(.*\\)+(.*)', r'\3', activeWindow)  
+    # (Programs with no defined Window-Title have the full Path as Title) 
+    active = re.sub(r'^([A-Z]:)(.*\\)+(.*)', r'\3', active)  
 
     # removes notification-brackets like (1) or (58) 
     # For example Reddit has these in the title
-    activeWindow = re.sub(r'(.*)\([0-9]{1,3}\) (.*)', r'\1\2', activeWindow)   #.. The Video Title - YouTube — Mozilla Firefox
+    active = re.sub(r'(.*)\([0-9]{1,3}\) (.*)', r'\1\2', active)   
 
-    # cahnges PowerPoint-Bildschirmpräsentation and PowerPoint-Referentenansicht to just "Powerpoint"
+    # changes PowerPoint-Bildschirmpräsentation and PowerPoint-Referentenansicht to just "Powerpoint"
     # also swaps the order becuse pwpnt has it backwards for some reason
-    if re.search("PowerPoint-Bildschirmpräsentation", activeWindow):
-        activeWindow = re.sub(r'PowerPoint-Bildschirmpräsentation  -  (.*)', r'\1 - PowerPoint', activeWindow)
-    activeWindow = re.sub(r'(PowerPoint-Referentenansicht)',r'PowerPoint', activeWindow)
-
-
+    if re.search("PowerPoint-Bildschirmpräsentation", active):
+        active = re.sub(r'PowerPoint-Bildschirmpräsentation  -  (.*)', r'\1 - PowerPoint', active)
+    active = re.sub(r'(PowerPoint-Referentenansicht)',r'PowerPoint', active)
+    
+    # Also jsut to initite some strings, what they do will be explained later
+    isActiveCutString = program = extensionSuffix = website = unsavedMark = ""
 
     # The following stuff is to seperate the Program out of the window title.
     # Many programs have their name at the end of the Window-Title. For example
     # qna - Discord
     # (= Discord in a channel called qna)
-    # So I just define a string "endstring" that is this chars behind the hyphen.
-    # not every Program has a normal  Ascii 45 as dash, so the regex is a bit more complicated.
+    # So I define a string "endstring" as the chars behind the hyphen.
+    # (not every Program has a normal  Ascii 45 as dash, so the regex is a bit more complicated)
 
-    endString = re.sub(r'(.*)( [—-] )(.*)$', r'\3', activeWindow, re.UNICODE)  #.. Mozilla Firefox
-    programPrefix = "" 
-    extensionSuffix = "" 
-    # Now a fat mach (switch) case. 
-    # This does all the programs reordering (splitting into programPrefix)and HTML/CSS injecting 
+    endString = re.sub(r'(.*)( [—-] )(.*)$', r'\3', active, re.UNICODE)  #.. Mozilla Firefox
+
+    # Now a fat match (switch) case. 
+    # This does all the programs reordering (splitting into program)and HTML/CSS injecting 
     # For Browsers it has a nested machcase for websides
     # For IDEs/Editors it has a nested machcase for filetypes  
-
-
     match endString:   
         case "Mozilla Firefox":
-            programPrefix = re.sub(r'(.*) — Mozilla Firefox', r'<span style="color:' + settings['colors']['Firefox'] + r'"> Firefox:</span> ', activeWindow)  #.. <span style="color:#hexfromsettings"> Firefox:</span> 
-            activeWindow = re.sub(r'(.*) — Mozilla Firefox', r'\1', activeWindow)                                                                         #.. The Video Title - YouTube
-            website = re.sub(r'(.*)( [-\|] )(.*)$', r'\3', activeWindow) #.. Youtube                                                                   
-            match activeWindow:
-                case "YouTube": activeWindow = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'
-                case "Twitch": activeWindow = '<span style="color:' + settings['colors']['Twitch'] + '"> Twitch</span>'
-                case "Wikipedia": activeWindow = '<span style="color:' + settings['colors']['Wikipedia'] + '"> Wikipedia</span>'
-                case "Wikiwand": activeWindow = '<span style="color:' + settings['colors']['Wikiwand'] + '"> Wikiwand</span>'
-                case "Netflix": activeWindow = '<span style="color:' + settings['colors']['Netflix'] + '">ﱄ Netflix</span>'
-                case "Google": activeWindow = '<span style="color:' + settings['colors']['Google'] + '"> Google</span>'
+            program = re.sub(r'(.*) — Mozilla Firefox', r'<span style="color:' + settings['colors']['Firefox'] + r'"> Firefox:</span> ', active)  #.. <span style="color:#hexfromsettings"> Firefox:</span> 
+            active = re.sub(r'(.*) — Mozilla Firefox', r'\1', active)                                                                                    #.. The Video Title - YouTube
+            website = re.sub(r'(.*)( [-\|] )(.*)$', r'\3', active)                                                                                       #.. Youtube                                                                   
+            match active:
+                case "YouTube": 
+                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)          # These here for the "Startpages"
+                    website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'  # they have onyl the Site name and nothing more
+                    active = ""                                                                            
+                case "Twitch": 
+                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                    website = '<span style="color:' + settings['colors']['Twitch'] + '"> Twitch</span>'
+                    active = ""
+                case "Wikipedia": 
+                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                    website = '<span style="color:' + settings['colors']['Wikipedia'] + '"> Wikipedia</span>'
+                    active = ""
+                case "Wikiwand": 
+                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                    website = '<span style="color:' + settings['colors']['Wikiwand'] + '"> Wikiwand</span>'
+                    active = ""
+                case "Netflix": 
+                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                    website = '<span style="color:' + settings['colors']['Netflix'] + '">ﱄ Netflix</span>'
+                    active = ""
+                case "Google": 
+                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                    website = '<span style="color:' + settings['colors']['Google'] + '"> Google</span>'
+                    active = ""
                 case _:
                     # Google changes Titles in diffrent languages
                     # This is to accompany this.                    
@@ -178,42 +190,52 @@ def getActiveTouple(musicToupleOld):
 
                     match website:
                         case "Google Search": 
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??- Google Suche', r'<span style="color:' + settings['colors']['Google'] + r'"> Google:</span> \1', activeWindow)      
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??- Google Suche', r'\1', active)      
+                            website = '<span style="color:' + settings['colors']['Google'] + '"> Google: </span>'      
                         case "YouTube":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)                                                          #.. <span style="color:#ff5405"> Firefox on</span> 
-                            activeWindow = re.sub(r'(.*)??( - )+?YouTube', r'<span style="color:' + settings['colors']['YouTube'] + r'"> YouTube:</span> \1', activeWindow) #.. <span style="color:#ff2e2e"> YouTube:</span> The Video Title 
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)              #.. <span style="color:#ff5405"> Firefox on</span> 
+                            active = re.sub(r'(.*)??( - )+?YouTube', r'\1', active)                                     #.. The Video Title 
+                            website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube: </span>'    #.. <span style="color:#ff2e2e"> YouTube:</span>
                         case "Wikipedia":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( - )+?Wikipedia', r'<span style="color:' + settings['colors']['Wikipedia'] + r'"> Wikipedia:</span> \1', activeWindow)
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??( - )+?Wikipedia', r'\1', active)
+                            website = '<span style="color:' + settings['colors']['Wikipedia'] + '"> Wikipedia: </span>'
                         case "Wikiwand":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( - )+?Wikiwand', r'<span style="color:' + settings['colors']['Wikiwand'] + r'"> Wikiwand:</span> \1', activeWindow)
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??( - )+?Wikiwand', r'\1', active)
+                            website = '<span style="color:' + settings['colors']['Wikiwand'] + '"> Wikiwand: </span>'
                         case "Twitch":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( - )+?Twitch', r'<span style="color:' + settings['colors']['Twitch'] + r'"> Twitch:</span> \1', activeWindow)   
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??( - )+?Twitch', r'\1', active)   
+                            website = '<span style="color:' + settings['colors']['Twitch'] + '"> Twitch: </span>'   
                         case "IMDb":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( - )+?IMDb', r'<span style="color:' + settings['colors']['IMDb'] + r'"> IMDb:</span> \1', activeWindow) 
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??( - )+?IMDb', r'\1', active) 
+                            website = '<span style="color:' + settings['colors']['IMDb'] + '"> IMDb: </span>' 
                         case "Netflix":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( - )+?Netflix', r'<span style="color:' + settings['colors']['Netflix'] + r'">ﱄ Netflix:</span> \1', activeWindow)
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??( - )+?Netflix', r'\1', active)
+                            website = '<span style="color:' + settings['colors']['Netflix'] + '">ﱄ Netflix: </span>'
                         case "HS Mittweida":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( \| )+?', r'<span style="color:' + settings['colors']['HSMW'] + r'"> HSMW:</span> \1', activeWindow) 
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??( \| )+?', r'\1', active) 
+                            website = '<span style="color:' + settings['colors']['HSMW'] + '"> HSMW: </span>' 
                         case "Stack Overflow":
-                            programPrefix = re.sub(r'Firefox:', r'Firefox ' + settings['strings']['on'] + r' ', programPrefix)
-                            activeWindow = re.sub(r'(.*)??( - )+?Stack Overflow', r'<span style="color:' + settings['colors']['StackOverflow'] + r'">  Stack Overflow:</span> \1', activeWindow)  
-                        case _: pass 
+                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
+                            active = re.sub(r'(.*)??( - )+?Stack Overflow', r'\1', active)  
+                            website = '<span style="color:' + settings['colors']['StackOverflow'] + '">  Stack Overflow: </span>'  
+                        case _: 
+                            website = ""
         case "Adobe Acrobat Reader DC (64-bit)":
-            programPrefix = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'<span style="color:' + settings['colors']['AdobeAcrobatReaderDC'] + r'"> Acrobat:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'\1', activeWindow)
+            program = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'<span style="color:' + settings['colors']['AdobeAcrobatReaderDC'] + r'"> Acrobat:</span> ', active)
+            active = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'\1', active)
         case "Discord":
-            programPrefix = re.sub(r'(.*) - Discord', r'<span style="color:' + settings['colors']['Discord'] + r'">ﭮ Discord:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - Discord', r'\1', activeWindow)
+            program = re.sub(r'(.*) - Discord', r'<span style="color:' + settings['colors']['Discord'] + r'">ﭮ Discord:</span> ', active)
+            active = re.sub(r'(.*) - Discord', r'\1', active)
         case "Visual Studio Code":
             # symbols for certain extensions (if you set the font to a nerdfont in your editor to can see them here too)
-            extensionSuffix = re.sub(r'(.*)\.([a-z]*) - (.*)',r'\2', activeWindow) #.. py
+            extensionSuffix = re.sub(r'(.*)\.([a-z]*) - (.*)',r'\2', active) #.. py
             match extensionSuffix:        
                     case "py":
                         extensionSuffix = "  "                                         #..    
@@ -239,95 +261,103 @@ def getActiveTouple(musicToupleOld):
                         extensionSuffix = "  "  
                     case _:
                         extensionSuffix = ""   
-            programPrefix = re.sub(r'(.*) - Visual Studio Code', r'<span style="color:' + settings['colors']['VSCode'] + r'"> VS Code:</span> ', activeWindow)
-            activeWindow = re.sub(r'(●)? ?(.*) - Visual Studio Code', r'\2' + extensionSuffix + r'<span style="color:' + settings['colors']['VSCodeUnsaved'] + r'">\1</span>', activeWindow)
-            activeWindow = re.sub(r'●', settings['strings']['VSCodeUnsaved'], activeWindow)
+            program = re.sub(r'(.*) - Visual Studio Code', r'<span style="color:' + settings['colors']['VSCode'] + r'"> VS Code:</span> ', active)
+            if "●" in active:
+                unsavedMark = settings['strings']['VSCodeUnsaved']
+            else:
+                unsavedMark = ""
+            active = re.sub(r'(●)? ?(.*) - Visual Studio Code', r'\2' + extensionSuffix, active)
         case "OneNote":
-            programPrefix = re.sub(r'(.*) - OneNote', r'<span style="color:' + settings['colors']['MSOneNote'] + r'">ﱅ OneNote:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - OneNote', r'\1', activeWindow)
+            program = re.sub(r'(.*) - OneNote', r'<span style="color:' + settings['colors']['MSOneNote'] + r'">ﱅ OneNote:</span> ', active)
+            active = re.sub(r'(.*) - OneNote', r'\1', active)
         case "Word":
-            programPrefix = re.sub(r'(.*) - Word', r'<span style="color:' + settings['colors']['MSWord'] + r'"> Word:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - Word', r'\1', activeWindow)
+            program = re.sub(r'(.*) - Word', r'<span style="color:' + settings['colors']['MSWord'] + r'"> Word:</span> ', active)
+            active = re.sub(r'(.*) - Word', r'\1', active)
         case "Excel":
-            programPrefix = re.sub(r'(.*) - Excel', r'<span style="color:' + settings['colors']['MSExcel'] + r'"> Excel:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - Excel', r'\1', activeWindow)
+            program = re.sub(r'(.*) - Excel', r'<span style="color:' + settings['colors']['MSExcel'] + r'"> Excel:</span> ', active)
+            active = re.sub(r'(.*) - Excel', r'\1', active)
         case "PowerPoint":
-            programPrefix = re.sub(r'(.*) - PowerPoint', r'<span style="color:' + settings['colors']['MSPowerPoint'] + r'"> PowerPoint:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - PowerPoint', r'\1', activeWindow)
+            program = re.sub(r'(.*) - PowerPoint', r'<span style="color:' + settings['colors']['MSPowerPoint'] + r'"> PowerPoint:</span> ', active)
+            active = re.sub(r'(.*) - PowerPoint', r'\1', active)
         case "Notepads":
-            programPrefix = re.sub(r'(.*) - Notepads', r'<span style="color:' + settings['colors']['Notepads'] + r'"> Notepads:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - Notepads', r'\1', activeWindow)
+            program = re.sub(r'(.*) - Notepads', r'<span style="color:' + settings['colors']['Notepads'] + r'"> Notepads:</span> ', active)
+            active = re.sub(r'(.*) - Notepads', r'\1', active)
         case "Mozilla Thunderbird":
-            programPrefix = re.sub(r'(.*) - Mozilla Thunderbird', r'<span style="color:' + settings['colors']['Thunderbird'] + r'"> Thunderbird:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - Mozilla Thunderbird', r'\1', activeWindow)
+            program = re.sub(r'(.*) - Mozilla Thunderbird', r'<span style="color:' + settings['colors']['Thunderbird'] + r'"> Thunderbird:</span> ', active)
+            active = re.sub(r'(.*) - Mozilla Thunderbird', r'\1', active)
         case "GIMP":
-            programPrefix = re.sub(r'(.*) - GIMP', r'<span style="color:' + settings['colors']['GIMP'] + r'"> GIMP:</span> ', activeWindow)
-            activeWindow = re.sub(r'\[(.+?)\].+? ([0-9]+x[0-9]+) - GIMP', r'\1 \2', activeWindow)   
+            program = re.sub(r'(.*) - GIMP', r'<span style="color:' + settings['colors']['GIMP'] + r'"> GIMP:</span> ', active)
+            active = re.sub(r'\[(.+?)\].+? ([0-9]+x[0-9]+) - GIMP', r'\1 \2', active)   
         case "Paint":
-            programPrefix = re.sub(r'(.*) - Paint', r'<span style="color:' + settings['colors']['Paint'] + r'"> Paint:</span> ', activeWindow)
-            activeWindow = re.sub(r'(.*) - Paint', r'\1', activeWindow)
+            program = re.sub(r'(.*) - Paint', r'<span style="color:' + settings['colors']['Paint'] + r'"> Paint:</span> ', active)
+            active = re.sub(r'(.*) - Paint', r'\1', active)
         case _: pass
     
     # Sets variables to "" 
     # for programs that dont say what they 
     # are in the window title 
-    # or programs not yet implented in the swich case below
-    if programPrefix == activeWindow: 
-        programPrefix = ""
-    if activeWindow == musicToupleOld:
-        activeWindow = ""
-
+    # or programs not yet implented in the swich case
+    if active == musicToupleOld:
+        active = ""
     # Cut lenghts futher. If settings are set.
-    if settings['maxLenghts']['cutActive']:
-        stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0]) + len(settings['strings']['musicWord']) + len(musicToupleOld[1]) + len(settings['strings']['musicActiveDivider'])
-        if int(settings['maxLenghts']['totalLength']) < (len(activeWindow) + stuffBeforeActiveLenght):
-            print("Active Cut.")
-            activeWindow = activeWindow[:(int(settings['maxLenghts']['totalLength']) - stuffBeforeActiveLenght)] + "…"
+    if settings['maxLengths']['cutActive']:
+        if doMusicRightNow:
+            if program == "":
+                # cut enabled, Music, no Program  
+                stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider'])
+            else:
+                if website == "":
+                    # cut enabled, Music, Program, no Website  
+                    stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider']) + len(program)-35
+                else: 
+                    # cut enabled, Music, Program, Website  
+                    stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider']) + len(program)-35 + len(website)-35    
+        else:
+            if program == "":
+                # cut enabled, no Music, no Program 
+                stuffBeforeActiveLenght = 0
+            else:
+                if website == "":
+                    # cut enabled, no Music, Program, no Website
+                    stuffBeforeActiveLenght = len(program)-35 
+                else:
+                    # cut enabled, no Music, Program, Website
+                    stuffBeforeActiveLenght = len(program)-35 + len(website)-35
 
-    # Some Programs only have the Program in the Title 
+
+        if int(settings['maxLengths']['totalLength']) < (stuffBeforeActiveLenght + len(active)):
+            isActiveCutString = "Yes"
+            cutAt = int(settings['maxLengths']['totalLength']) - (stuffBeforeActiveLenght + len(active))
+            active = active[:cutAt] + "…"
+        else:
+            isActiveCutString = "No"
+        
+
+    # Some Programs only have the Program name in the Title 
     # So they are beautifyed here 
-    activeWindow = re.sub(r'^(OBS ).*', r'<span style="color:' + settings['colors']['OBS'] + r'"> OBS</span>', activeWindow)
-    activeWindow = re.sub('Joplin', '<span style="color:' + settings['colors']['Joplin'] + '"> Joplin</span>', activeWindow)
-    activeWindow = re.sub('Mozilla Firefox', '<span style="color:' + settings['colors']['Firefox'] + '"> Firefox</span>', activeWindow) # start page
-    activeWindow = re.sub('PowerShell Core', '<span style="color:' + settings['colors']['PowerShellCore'] + '"> PowerShell Core</span>', activeWindow) 
-    activeWindow = re.sub(r'(Select )?Python 3.[0-9][0-9]? \(64-bit\)', r'<span style="color:' + settings['colors']['Python3'] + r'"> Python 3</span>', activeWindow) 
-    activeWindow = re.sub('GNU Image Manipulation Program', '<span style="color:' + settings['colors']['GIMP'] + '"> GIMP</span>', activeWindow)
-    activeWindow = re.sub('python3\.10\.exe', '<span style="color:' + settings['colors']['Python3'] + '"> Python 3</span>', activeWindow)
-    activeWindow = re.sub('Spotify Premium', '<span style="color:' + settings['colors']['musicIconColor'] + '">' + settings['strings']['musicIcon'] + settings['strings']['musicSource'][:-4] + '</span>', activeWindow)
-    activeWindow = re.sub(r'.* - Obsidian v[0-9]+\.[0-9]+\.[0-9]+', '<span style="color:' + settings['colors']['Obsidian'] + '"> Obsidian</span>', activeWindow)
+    active = re.sub(r'^(OBS ).*', r'<span style="color:' + settings['colors']['OBS'] + r'"> OBS</span>', active)
+    active = re.sub('Joplin', '<span style="color:' + settings['colors']['Joplin'] + '"> Joplin</span>', active)
+    active = re.sub('Mozilla Firefox', '<span style="color:' + settings['colors']['Firefox'] + '"> Firefox</span>', active) # start page
+    active = re.sub('PowerShell Core', '<span style="color:' + settings['colors']['PowerShellCore'] + '"> PowerShell Core</span>', active) 
+    active = re.sub(r'(Select )?Python 3.[0-9][0-9]? \(64-bit\)', r'<span style="color:' + settings['colors']['Python3'] + r'"> Python 3</span>', active) 
+    active = re.sub('GNU Image Manipulation Program', '<span style="color:' + settings['colors']['GIMP'] + '"> GIMP</span>', active)
+    active = re.sub('python3\.10\.exe', '<span style="color:' + settings['colors']['Python3'] + '"> Python 3</span>', active)
+    active = re.sub('Spotify Premium', '<span style="color:' + settings['colors']['musicIconColor'] + '">' + settings['strings']['musicIcon'] + settings['strings']['musicSource'][:-4] + '</span>', active)
+    active = re.sub(r'.* - Obsidian v[0-9]+\.[0-9]+\.[0-9]+', '<span style="color:' + settings['colors']['Obsidian'] + '"> Obsidian</span>', active)
     
-    return programPrefix, activeWindow, activeWindowText # returns touple 
+    # this step is by default completely uneccesary 
+    # it just "swaps" active and program,
+    # when active starts with html stuff. 
+    # But when the order of things is changes by the user in some wierd way, this might be neccesary.
+    if active[:18] == '<span style="color':
+        program = active 
+        active = ""
+
+    # returns touple 
+    return program, active, website, unsavedMark, activeWindowTextUntouched, isActiveCutString 
 
 # https://pynput.readthedocs.io/en/latest/keyboard.html
 def hotkey(doActive):
-    # KeyboardListener = keyboard
-    # COMBIANTIONS = [
-    #     # (keyboard.Key.shift, keyboard.KeyCode.from_vk(VK.F20))
-    #     {KeyboardListener.Key.shift, KeyboardListener.KeyCode(vk=127)},
-    #     # {KeyboardListener.Key.shift, KeyboardListener.KeyCode(char='A')}
-    # ]
-    # current = set()
-    # def execute(doActive):
-    #     if doActive.value:
-    #         doActive.value = False
-    #         print('Music-only-mode: ON')
-    #     else:
-    #         doActive.value = True
-    #         print('Music-only-mode: OFF')
-
-    # def on_press(key):
-    #     if any([key in COMBO for COMBO in COMBIANTIONS]):
-    #         current.add(key)
-    #         if any(all(k in current for k in COMBO) for COMBO in COMBIANTIONS):
-    #                 execute(doActive)
-
-    # def on_release(key):
-    #     if any([key in COMBO for COMBO in COMBIANTIONS]):
-    #         current.remove(key)
-
-    # with KeyboardListener.Listener(on_press=on_press, on_release=on_release) as listener:
-    #    listener.join()
-
     def on_activate():
         if doActive.value:
             doActive.value = False
@@ -340,7 +370,7 @@ def hotkey(doActive):
         return lambda k: f(l.canonical(k))
 
     hotkey = keyboard.HotKey(
-        keyboard.HotKey.parse('<shift>+<127>'),
+        keyboard.HotKey.parse(settings['strings']['musicOnlyModeHotKey']),
         on_activate)
     with keyboard.Listener(
             on_press=for_canonical(hotkey.press),
@@ -349,7 +379,10 @@ def hotkey(doActive):
 
 def main(doActive): 
     # Set unused Strings empty to initialize
-    musicIcon = title = musicWord = artist = musicToupleOld  = musicActiveDivide = programPrefix = activeWindow = musicWindowTitle = ""
+    musicIcon = title = musicWord = artist = musicToupleOld  = musicActiveDivide = program = active = website = unsaved = musicWindowTitle = isActiveCutString = ""
+    
+    # Set unused Booleans
+    doMusicRightNow = True
 
     # This makes a keyboard for key emulation 
     # This will be used later to tell OBS that something happened through the use of Hotkeys
@@ -374,21 +407,21 @@ def main(doActive):
         if checkIfProcessRunning(settings['strings']['musicSource']):
             musicHWND = getMusicHWND()
             doMusic = True
-            
+            doMusicRightNow = True
         else:
-            print(f"{settings['strings']['musicSource']} was not detected.") 
+            musicStatus = f"{settings['strings']['musicSource']} was not detected."
             doMusic = False
             musicToupleOld = musicWord = musicIcon = musicActiveDivide = "" 
     else:
-        print("Music displaying is disabled in Settings.json.")
+        musicStatus = "Music displaying is disabled in Settings.json."
         doMusic = False
         musicToupleOld = musicWord = musicIcon = musicActiveDivide = "" 
 
-
+    tick = 1
+    musicStatus = ""
     # This is the loop that runns all the time.
     try:
         while(True):
-
             if doMusic:
                 # sets musicTouple to the current (Artist, Title)
                 musicTouple = getMusicTouple(musicHWND)
@@ -398,7 +431,7 @@ def main(doActive):
                 # the old one is at first just "" and then
                 # overwritten when they are different
                 if musicTouple == musicToupleOld:
-                    print('Music remains unchanged.')
+                    pass
                 else:
                     # old one overwritten (see)
                     musicToupleOld = musicTouple
@@ -414,11 +447,14 @@ def main(doActive):
                     
                     # if the music is idle, make all music related strings empty
                     if artist == "" and title == "":
-                        print("Music is idle. (Nothing is playing)") 
+                        musicStatus = "Music is idle. (Nothing is playing)" 
+                        doMusicRightNow = False
                         musicIcon = ""
                         musicWord = "" 
                         musicActiveDivide = ""
                     else: 
+                        musicStatus = "Detected" 
+                        doMusicRightNow = True
                         # "reset" the the variables
                         musicWord = '<span style="color:'+ settings['colors']['musicWordColor'] + '">' + settings['strings']['musicWord'] + '</span>'
                         musicIcon = '<span style="color:'+ settings['colors']['musicIconColor'] + '">' + settings['strings']['musicIcon'] + '</span>'
@@ -439,37 +475,39 @@ def main(doActive):
             else:
                 musicToupleOld = ("", "", "")
 
-                    
+                   
             # The following 2 lines set how fast the Script runs.
             # Faster = better, but also more ressource heavy.
             # The Time can be set in the settigs.json under 'time'
             # by default it checks Active every second
             # and Music every 5 seconds 
             for y in range(settings['time']['musicTickRate']):                 
-                time.sleep(settings['time']['baseTickRate'])    
+                time.sleep(settings['time']['baseTickRate'])  
+
+                
                 # This is the same thing as up there the getMusicTouple
                 # but with Active this time. 
                 if doActive.value:
-                    activeTouple = getActiveTouple(musicToupleOld)
-                    programPrefix = activeTouple[0]
-                    activeWindow = activeTouple[1]
-                    activeWindowTile = activeTouple[2]
+                    activeTouple = getActiveTouple(musicToupleOld, doMusicRightNow)
+                    program = activeTouple[0]
+                    active = activeTouple[1]
+                    website = activeTouple[2]
+                    unsavedMark = activeTouple[3]
+                    activeWindowTile = activeTouple[4]
+                    isActiveCutString = activeTouple[5]
                 else:
-                    programPrefix = ""
-                    activeWindow = ""
+                    program = ""
+                    active = ""
                     activeWindowTile = "Active deactivated"
 
                 # This is so that if you focus the 
                 # Music Exe, yone only sees the music
                 # otherwise one chould see Music "twice"
-                if activeWindow == musicWindowTitle:
-                    activeWindow = ""
-
-                # Prints the unbeautified Active WinTile
-                print('Active updated: ' + activeWindowTile)
+                if active == musicWindowTitle:
+                    active = ""
 
                 # This combines all the diffrent strings into "writeme"
-                writeme = musicIcon + title + musicWord + artist + musicActiveDivide + programPrefix + activeWindow
+                writeme = musicIcon + title + musicWord + artist + musicActiveDivide + program + website + active + unsavedMark
 
                 # This opens assets/stringme_tamplate.htm 
                 # and saves it's content as string
@@ -489,6 +527,17 @@ def main(doActive):
                 f.write(fullHtmlString)
                 f.close() 
 
+
+
+                os.system('cls')
+                print(f"StringMe-OBS - - - Tick: {str(tick)} \n-----------\nMusic Status: {musicStatus}\nMusic: {musicWindowTitle} \n-----------\nActive: {activeWindowTile}\nIs Cut: {isActiveCutString}")
+                print(f"\n\n\n\n\n")
+                print("prg: " + program)
+                print("web: " + website)
+                print("act: " + active)
+                print("usm: " + unsavedMark)
+                tick += 1
+
     except Exception as e:
         f = open("assets/errorlog.txt", "a")
         f.write(str(datetime.now()) + "\n" + str(e))
@@ -496,8 +545,6 @@ def main(doActive):
         f.close()               
 
 if __name__ == "__main__":
-
-    print('Music-only-mode: OFF')
     doActive = multiprocessing.Value('b', True) 
 
     pServer = multiprocessing.Process(target=main,args=[doActive])
