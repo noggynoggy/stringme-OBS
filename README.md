@@ -5,42 +5,74 @@
 
 (↑↑ Click me I'm a Video!)
 
-This is windows only. As of now the script is just configured to work with [Spotify-Premium-desktop](https://www.spotify.com/de/download/windows/) as music source.
+This is windows only. 
 
-Colored output and icons are currently implemented for:
+### Currently implemented are:
 * Firefox
-  - YouTube
-  - Twitch 
-  - Wikipedia + Wikiwand
-  - IMDb
-  - HSMW
-  - Netflix
+  - Google.com, YouTube.com, Twitch.tv , Wikipedia.org + Wikiwand.com, IMDb.com, hs-mittweida.de, Netflix.com, StackOverflow.com
 * Discord
 * Visual Studio Code
   - Saved or Unsaved
-  - Icons for extensions .py, .html, .htm, .java, .ahk, .json, .ini, .txt, .js, .css, .sh
+  - Icons for extensions `.py`, `.html`, `.htm`, `.java`, `.ahk`, `.json`, `.ini`, `.txt`, `.js`, `.css`, `.sh`
 * Adobe Acrobat Reader
 * Microsoft Word, Excel, Powerpoint and OneNote
 * [Notepdas](https://github.com/JasonStein/Notepads) 
 * Joplin
-* Thunderbird
+* Obsidian
+* Mozilla Thunderbird
+* Powershell Core
+* Python 3 Shell
+* Spotify (Premium)
+* GIMP
+* Paint
 
-wip...
+> These are everything I use. Contributions for more Programs/Websites are welcome!
 If something isn't listed here it will still be dispayed but not with color and or icon.
 
 ## To use it in OBS (fist time):
-1. Make sure you have Python3 installed on your machine. Also you will need to install some packages with pip for python. If you dont know what that means look it up or maybe watch [this video](https://youtu.be/7snh_1Hf_TI). I'll just write down all packages you'll need: 
-3. Run OBS
-4. Run `stringme.py`
-5. Add a new source where you want it to be displayed. Choose Browser source. Check the local file checkbox. Navigate to where you saved the files from this repro and choose `stringme.htm` (Not `stringme_tamplate.htm`!). Set the dimensions to ⇅`70` and ⇄`2000`. Delete all contents from the "Custom CSS" box. Check " shutdown source when not visible". Check "Refresh browser when sceene becomes active".  Click OK.
-7. Alt drag the right side of the new source so the scrollbar is hidden. 
-8. If nothing is dispayed click reload on the browser scource and make sure the script is still running. 
-9. Hide `python.3.##.exe` (if you want) with AHK or like [this](https://answers.microsoft.com/en-us/windows/forum/all/how-can-i-hide-a-specific-program-in-the-system/f7f09999-9397-44e8-b1d0-792a49d3721b). 
+1. Make sure you have Python3 installed on your machine. Also you will need to install all packages in reqirements.txt with pip for python. If you want do do it manually and dont know what that means look it up or maybe watch [this video](https://youtu.be/7snh_1Hf_TI). Or just run ↓ whilest in the `/StringMe-OBS` fodler
+
+```shell
+pip install -r requirements.txt
+``` 
+> If it errors, you might have not set up pip corretctly. Read: [help](https://pip.pypa.io/en/stable/installation/).
+
+2. Run OBS
+3. Run `stringme.py` with Python3
+   In Powershell with `python3 .\StringMe-OBS.py` 
+   In File Explorer by right clicking it, open with, Pyhton 3.*Version*.
+4. Add a new source where you want it to be displayed. Choose Browser source. Check the local file checkbox. Navigate to where you saved the files from this repro and choose `stringme.htm` (Not `stringme_tamplate.htm`!). Set the dimensions (⇅`70`, ⇄`2000` worked for me). Delete all contents from the "Custom CSS" box. Check " shutdown source when not visible". Check "Refresh browser when sceene becomes active".  Click OK.
+5. Alt drag the right side of the new source so the scrollbar is hidden. 
+6. If nothing is dispayed click reload on the browser scource and make sure the script is still running. 
+7. Hide `python.3.##.exe` from the Taskbar (if you want) with AHK or like [this](https://answers.microsoft.com/en-us/windows/forum/all/how-can-i-hide-a-specific-program-in-the-system/f7f09999-9397-44e8-b1d0-792a49d3721b). There is usefull console output, but your viewers won't gain much from it. 
+
 
 ## To use it every time after the first:
 1. Run OBS
 2. Run `stringme.py`
 3. Hide `python.3.##.exe` (if you want)
 
-## Customization 
-wip
+## Behaviour Tips
+* It will only display Spotify info if Spotify.exe was already running when the Script started. *This is done to minimize Ressorce requirements*  
+* If for some reason after some time nothing is displayed in OBS, reload the browser source. (This means there was a bug in the code for a usecase I have not tested yet. You may file a bug report.)
+* If the program crashes file a bug report and includethe content of errorlog.txt and what to do to recreate the bug.
+
+## Customization
+There are a lot of things to set up in settings.json. The following will elaborate on what the lines each do:
+
+- **"showMusicByDefault"**: set false to never display music info (Also saves ressorces)
+- **"colors"**: Explains itself. Please only use 6 character long hex codes. (Things like `#000` or `blue` break the code!)
+- **"on"**: Customize "Firefox`on`Website"
+- **"musicWord"**, **"musicIcon"**, **"musicActiveDivider"**: Customize Format of "whats around" the Song name and Artist name
+- **"musicSource"**: I only tested Spotify Premium, but maybe there are other programs that have their Info in the window title. You can set the exe name here and try.
+- **"musicIdle"**: When nothign is playing, this is what the exe's window title is. 
+- **"VSCodeUnsaved"**: is what will be displayed after everything, when the file you're working on is unsaved
+- **"googleSearchInYourLanguage"**: Google.com changes it's window title depending your language. You can account for that here.
+- Sets the Hot Key for the Music-/Active only mode cycle. [Here](https://css-tricks.com/snippets/javascript/javascript-keycodes/) you can find a guide for the codes. 
+- **"baseTickRate"**: time in seconds the program "reloads". Less means faster response time, but more ressource intensive.  
+- **"musicTickRate"**: Sets how often it'll "reload" the music info (So, e.g. baseTickRate:1 and MusicTickRate:5 means every 5 seconds).
+- **"cutMusicTitle"**: If the title is longer than "musicTitle" cut it short?
+- **"musicTitle"**: Sets Max Length for a music Title
+- **"cutActive"**: If the The active title should be cut if its too long
+- **"totalLengthFixed"**: Sets Max Length for everything displayed combined
+- **"useDynamicMaxLengthFile"**: If true the "totalLengthFixed" will be ignored and the total length will instead be read from the assets\dynamicMaxLength.txt at every base step. *(For example if could change every time you change a scene with a hotkey to the required value)*

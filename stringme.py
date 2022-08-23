@@ -1,10 +1,9 @@
-from ast import Global
 import os
 from win32gui import GetWindowText, GetForegroundWindow
 from datetime import datetime
 from pynput.keyboard import Key, Controller
 from pynput import keyboard
-import psutil, win32process, win32gui, re, time, json, multiprocessing, textwrap
+import psutil, win32process, win32gui, re, time, json, multiprocessing
 
 # This is the path the fil is run at. 
 # But one has to swap backslashes for normal ones. 
@@ -92,7 +91,7 @@ def getMusicTouple(musicHwnd):
         # returns touple
         return title, artist, musicWindowTitle
 
-def getActiveTouple(musicToupleOld, doMusicRightNow):
+def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
     # This function is to return stuff related to the currently activated window.
     # (The Active window is the one "marked" on the taskbar)
     # It also reorders and "beautifies" by "injecting" HTML/CSS and icons in the strings.
@@ -301,7 +300,7 @@ def getActiveTouple(musicToupleOld, doMusicRightNow):
         active = ""
     # Cut lenghts futher. If settings are set.
     if settings['maxLengths']['cutActive']:
-        if doMusicRightNow:
+        if doMusicRightNow and hotkeyStatus.value < 3: # hotkeyStatus 3 and 4 have both no music
             if program == "":
                 # cut enabled, Music, no Program  
                 stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider'])
@@ -325,9 +324,19 @@ def getActiveTouple(musicToupleOld, doMusicRightNow):
                     stuffBeforeActiveLenght = len(program)-35 + len(website)-35
 
 
-        if int(settings['maxLengths']['totalLength']) < (stuffBeforeActiveLenght + len(active)):
+        # This does the Dynamic Max Length File "getting" 
+        # If its disabled, it just gets the Fixed Max Length from the settings.json
+        if settings['maxLengths']['useDynamicMaxLengthFile']:
+            maxlf = open(__path + "assets/dynamicMaxLength.txt", "r", encoding="utf-8")
+            maxLength = int(maxlf.read().strip())
+            maxlf.close()
+        else: maxLength = int(settings['maxLengths']['totalLengthFixed'])
+
+        # This actually does the cutting, if its to long 
+        # It also sets a string which we can print in the Console later
+        if maxLength < (stuffBeforeActiveLenght + len(active)):
             isActiveCutString = "Yes"
-            cutAt = int(settings['maxLengths']['totalLength']) - (stuffBeforeActiveLenght + len(active))
+            cutAt = maxLength - (stuffBeforeActiveLenght + len(active))
             active = active[:cutAt] + "…"
         else:
             isActiveCutString = "No"
@@ -357,29 +366,29 @@ def getActiveTouple(musicToupleOld, doMusicRightNow):
     return program, active, website, unsavedMark, activeWindowTextUntouched, isActiveCutString 
 
 # https://pynput.readthedocs.io/en/latest/keyboard.html
-def hotkey(doActive):
-    def on_activate():
-        if doActive.value:
-            doActive.value = False
-            print('Music-only-mode: ON')
-        else:
-            doActive.value = True
-            print('Music-only-mode: OFF')
+def hotkey(hotkeyStatus):
+    def on_activate(): 
+        print("\nHotkey detected.")
+        hotkeyStatus_Lock = multiprocessing.Lock() 
+        with hotkeyStatus_Lock:  
+            hotkeyStatus.value = hotkeyStatus.value + 1
+            if hotkeyStatus.value == 5:
+                hotkeyStatus.value = 1
 
     def for_canonical(f):
         return lambda k: f(l.canonical(k))
 
     hotkey = keyboard.HotKey(
-        keyboard.HotKey.parse(settings['strings']['musicOnlyModeHotKey']),
+        keyboard.HotKey.parse(settings['strings']['hotKey']),
         on_activate)
     with keyboard.Listener(
-            on_press=for_canonical(hotkey.press),
+            on_press=for_canonical(hotkey.press), 
             on_release=for_canonical(hotkey.release)) as l:
         l.join()
 
-def main(doActive): 
+def main(hotkeyStatus): 
     # Set unused Strings empty to initialize
-    musicIcon = title = musicWord = artist = musicToupleOld  = musicActiveDivide = program = active = website = unsaved = musicWindowTitle = isActiveCutString = ""
+    musicIcon = title = musicWord = artist = musicToupleOld  = musicActiveDivide = program = active = website = musicWindowTitle = isActiveCutString = ""
     
     # Set unused Booleans
     doMusicRightNow = True
@@ -388,7 +397,6 @@ def main(doActive):
     # This will be used later to tell OBS that something happened through the use of Hotkeys
     KeyboardTyper = Controller() 
 
-
     # CSS styling is "injected" for the musicIcon and the musicWord,
     # so that colors are there
     musicWord = '<span style="color:'+ settings['colors']['musicWordColor'] + '">' + settings['strings']['musicWord'] + '</span>'
@@ -396,7 +404,6 @@ def main(doActive):
 
     # initialzes musicActiveDivide
     musicActiveDivide = settings['strings']['musicActiveDivider'] 
-
 
     # This is to determine if the script is to display Music Info
     # It checks for the settings boolean from the json, if the Process is running and
@@ -470,8 +477,6 @@ def main(doActive):
                     KeyboardTyper.release(Key.f15)   
                     time.sleep(0.05)            
                     KeyboardTyper.release(Key.alt) 
-
-                    print('Music Updated.')
             else:
                 musicToupleOld = ("", "", "")
 
@@ -487,8 +492,8 @@ def main(doActive):
                 
                 # This is the same thing as up there the getMusicTouple
                 # but with Active this time. 
-                if doActive.value:
-                    activeTouple = getActiveTouple(musicToupleOld, doMusicRightNow)
+                if hotkeyStatus.value % 2 == 1: # 1 and 3 are with active
+                    activeTouple = getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus)
                     program = activeTouple[0]
                     active = activeTouple[1]
                     website = activeTouple[2]
@@ -496,8 +501,7 @@ def main(doActive):
                     activeWindowTile = activeTouple[4]
                     isActiveCutString = activeTouple[5]
                 else:
-                    program = ""
-                    active = ""
+                    program = active = website = unsavedMark = activeWindowTile = isActiveCutString = ""
                     activeWindowTile = "Active deactivated"
 
                 # This is so that if you focus the 
@@ -507,7 +511,12 @@ def main(doActive):
                     active = ""
 
                 # This combines all the diffrent strings into "writeme"
-                writeme = musicIcon + title + musicWord + artist + musicActiveDivide + program + website + active + unsavedMark
+                # depending on the Hotkey status
+                match hotkeyStatus.value:
+                    case 1: writeme = musicIcon + title + musicWord + artist + musicActiveDivide + program + website + active + unsavedMark
+                    case 2: writeme = musicIcon + title + musicWord + artist + musicActiveDivide 
+                    case 3: writeme = program + website + active + unsavedMark
+                    case _: writeme = ""
 
                 # This opens assets/stringme_tamplate.htm 
                 # and saves it's content as string
@@ -527,11 +536,21 @@ def main(doActive):
                 f.write(fullHtmlString)
                 f.close() 
 
-
-
                 os.system('cls')
-                print(f"StringMe-OBS - - - Tick: {str(tick)} \n-----------\nMusic Status: {musicStatus}\nMusic: {musicWindowTitle} \n-----------\nActive: {activeWindowTile}\nIs Cut: {isActiveCutString}")
-                print(f"\n\n\n\n\n")
+                print("StringMe-OBS - - - Tick: " + str(tick))
+                print("-----------")
+                print("Music Status: " + musicStatus)
+                print("Music: " + musicWindowTitle)
+                print("-----------")
+                print("Active: " + activeWindowTile)
+                print("Is Cut: " + isActiveCutString)
+                print("-----------")
+                match hotkeyStatus.value:
+                    case 1: print("Hotkey: Music & Active")
+                    case 2: print("Hotkey: Music Only")
+                    case 3: print("Hotkey: Active Only")
+                    case 4: print("Hotkey: Both Disabled")
+                print("\n\n")
                 print("prg: " + program)
                 print("web: " + website)
                 print("act: " + active)
@@ -544,17 +563,25 @@ def main(doActive):
         f.write('\n\n')
         f.close()               
 
+# Global variable initiation
+# somehow it didnt work in the if __name__ statement 
+# thats why its commented out
+# hotkeyStatus = multiprocessing.Value('i', 1)
+# print(type(hotkeyStatus))
+
 if __name__ == "__main__":
-    doActive = multiprocessing.Value('b', True) 
+    with multiprocessing.Manager() as karen: 
 
-    pServer = multiprocessing.Process(target=main,args=[doActive])
-    pHotKey = multiprocessing.Process(target=hotkey,args=[doActive])
+        hotkeyStatus = karen.Value('i', 1)
 
-    pServer.start()
-    pHotKey.start()
+        pServer = multiprocessing.Process(target=main, args=[hotkeyStatus])
+        pHotKey = multiprocessing.Process(target=hotkey, args=[hotkeyStatus])
 
-    pServer.join()
-    pHotKey.join()
+        pServer.start()
+        pHotKey.start()
+
+        pServer.join()
+        pHotKey.join()
     
 
 

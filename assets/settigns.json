@@ -1,7 +1,5 @@
 {
     "showMusicByDefault": true,
-    "fontUsed": "assets/casnf.woff2",
-    "order": "%M%A",
     "colors": {
         "base": "#FFFFFF",
 
@@ -50,7 +48,7 @@
         "musicIdle": "Spotify Premium",
         "VSCodeUnsaved": "ungespeichert",
         "googleSearchInYourLanguage": "Google Suche",
-        "musicOnlyModeHotKey": "<shift>+<127>"
+        "hotKey": "<shift>+<127>"
     },
     "time": {
         "baseTickRate": 1,
@@ -58,8 +56,9 @@
     },
     "maxLengths": {
         "cutMusicTitle": true,
-        "cutActive": true,
         "musicTitle": "30",
-        "totalLength": "125"
+        "cutActive": true,
+        "totalLengthFixed": "125",
+        "useDynamicMaxLengthFile": true
     }
 }
