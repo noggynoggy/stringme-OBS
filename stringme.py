@@ -1,5 +1,5 @@
 import os
-from win32 import win32gui
+from win32gui import GetWindowText, GetForegroundWindow
 from datetime import datetime
 from pynput.keyboard import Key, Controller
 from pynput import keyboard
@@ -56,7 +56,7 @@ def getMusicTouple(musicHwnd):
     # The re.sub lines are here to cut the musicWindowTitle to format
     # and split it into the variables artist and title
     # the comments to the side stering with #.. are an example what happens to a string at each step.
-    musicWindowTitle = win32gui.GetWindowText(musicHwnd)                                             #.. Amy Lee - Speak to Me (From "Voice from the Stone" Original Motion Picture Soundtrack)
+    musicWindowTitle = GetWindowText(musicHwnd)                                             #.. Amy Lee - Speak to Me (From "Voice from the Stone" Original Motion Picture Soundtrack)
     if musicWindowTitle == settings['strings']['musicIdle'] or musicWindowTitle == "":
         return "", "", ""
     else:   
@@ -106,7 +106,7 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
     # Comments staring with #.. are examples what happens at each line
 
     # Sets active to the active window Title (String)
-    active = win32gui.GetWindowText(win32gui.GetForegroundWindow()) 
+    active = GetWindowText(GetForegroundWindow()) 
     activeWindowTextUntouched = active                    
 
     # Now to the reordering and beautifying.
