@@ -36,14 +36,14 @@ If something isn't listed here it will still be dispayed but not with color and 
 python -m pip install pywin32
 pip install -r requirements.txt
 ``` 
-> Make sure the `python` command also corresponds with `Python 3.10.xx`. You can check with zhe command `python --version`.
+> Make sure the `python` command also corresponds with `Python 3.10.xx`. You can check with the command `python --version`.
 > If it errors, you might have not set up pip corretctly. Read: [help](https://pip.pypa.io/en/stable/installation/).
 
 2. Run OBS
-3. Run `stringme.py` with Python3
-   In Powershell with `python3 .\StringMe-OBS.py` 
+3. Run `stringme.py` with Python
+   In Powershell with `python .\StringMe-OBS.py` 
    In File Explorer by right clicking it, open with, Pyhton 3.*Version*.
-4. Add a new source where you want it to be displayed. Choose Browser source. Check the local file checkbox. Navigate to where you saved the files from this repro and choose `stringme.htm` (Not `stringme_tamplate.htm`!). Set the dimensions (⇅`70`, ⇄`2000` worked for me). Delete all contents from the "Custom CSS" box. Check " shutdown source when not visible". Check "Refresh browser when screen becomes active".  Click OK.
+4. Add a new source where you want it to be displayed. Choose Browser source. Check the local file checkbox. Navigate to where you saved the files from this repro and choose `stringme.htm` (Not `stringme_tamplate.htm`!). Set dimensions (⇅`70`, ⇄`2000` worked for me). Delete all contents from the "Custom CSS" box. Check "shutdown source when not visible". Check "Refresh browser when screen becomes active".  Click OK.
 5. If necessary alt-drag the right side of the new source so the scrollbar is hidden. 
 6. If nothing is dispayed click reload on the browser scource and make sure the script is still running. 
 7. Hide `python.3.##.exe` from the Taskbar (if you want) with AHK or like [this](https://answers.microsoft.com/en-us/windows/forum/all/how-can-i-hide-a-specific-program-in-the-system/f7f09999-9397-44e8-b1d0-792a49d3721b). There is usefull console output, but your viewers won't gain much from it. 
@@ -56,6 +56,7 @@ pip install -r requirements.txt
 
 ## Behaviour Tips
 * It will only display Spotify info if Spotify.exe was already running when the Script started. *This is done to minimize Ressorce requirements*  
+  * *If you close and reopen spotify.exe during the runtime of stringme.py, you will need to restart stringme.py* 
 * If for some reason after some time nothing is displayed in OBS, reload the browser source. (This means there was a bug in the code for a usecase I have not tested yet. You may file a bug report.)
 * If the program crashes file a bug report and include the content of errorlog.txt and what to do to recreate the bug.
 ---
@@ -92,3 +93,6 @@ there are options in settings.json to "cut short" too long strings, including th
 
 #### Dynamic Cutting
 If "useDynamicMaxLengthFile" is enabled in settings.json, the "totalLengthFixed" will be ignored and the total length will instead be read from the assets\dynamicMaxLength.txt at every base step. *(For example, every time you change your scene with a hotkey, the hothey could also change the content of the file)*
+
+### Hotkey pressed when a new song comes on
+The program autoatically presses a HotKey when a new song comes on. You can use this for all sorts of effects in OBS. *(I use it to display the cover image momentarily with tuna)*. By deafult the hotkey is `Alt`+`F15`. This is hardcoded, you can change it in `stringme.py` at lines 473-479, or just comment the section out if yo deem it unnecessary.
