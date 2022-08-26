@@ -30,11 +30,13 @@ This is windows only.
 If something isn't listed here it will still be dispayed but not with color and or icon.
 
 ## To use it in OBS (fist time):
-1. Make sure you have Python3 installed on your machine. Also you will need to install all packages in reqirements.txt with pip for python. If you want do do it manually and dont know what that means look it up or maybe watch [this video](https://youtu.be/7snh_1Hf_TI). Or just run ↓ whilest in the `/StringMe-OBS` fodler
+1. Make sure you have Python3.10 or greater installed on your machine. Also you will need to install all packages in reqirements.txt with pip for python. If you want do do it manually and don't know what that means look it up or maybe watch [this video](https://youtu.be/7snh_1Hf_TI). Or just run ↓ whilest in the `/StringMe-OBS` fodler.
 
 ```shell
+python -m pip install pywin32
 pip install -r requirements.txt
 ``` 
+> Make sure the `python` command also corresponds with `Python 3.10.xx`. You can check with zhe command `python --version`.
 > If it errors, you might have not set up pip corretctly. Read: [help](https://pip.pypa.io/en/stable/installation/).
 
 2. Run OBS
@@ -56,7 +58,7 @@ pip install -r requirements.txt
 * It will only display Spotify info if Spotify.exe was already running when the Script started. *This is done to minimize Ressorce requirements*  
 * If for some reason after some time nothing is displayed in OBS, reload the browser source. (This means there was a bug in the code for a usecase I have not tested yet. You may file a bug report.)
 * If the program crashes file a bug report and include the content of errorlog.txt and what to do to recreate the bug.
-
+---
 ## Customization
 There are a lot of things to set up in settings.json. You will need to restart the Program to see things change. 
 The following will elaborate on what the lines each do:
@@ -76,8 +78,8 @@ The following will elaborate on what the lines each do:
 - **"musicTitle"**: Sets Max Length for a music Title
 - **"cutActive"**: If the The active title should be cut if its too long
 - **"totalLengthFixed"**: Sets Max Length for everything displayed combined
-- **"useDynamicMaxLengthFile"**: If true the "totalLengthFixed" will be ignored and the total length will instead be read from the assets\dynamicMaxLength.txt at every base step. *(For example if could change every time you change a scene with a hotkey to the required value)*
-
+- **"useDynamicMaxLengthFile"**: If true the dynamic cuuting will be done (Read extra Features ↓) 
+---
 ## Extra Feastures
 ### Selective Modes
 - Cycle between [Music and Active], [Music only], [Active only] and [Both disabled] with a hotkey 
@@ -85,5 +87,8 @@ The following will elaborate on what the lines each do:
 - [Here](https://css-tricks.com/snippets/javascript/javascript-keycodes/) you can find a guide for key-codes 
 
 ### Shorten Music and Active
-- there are options in settings.json to "cut short" too long strings, including the song title and active
-- 
+there are options in settings.json to "cut short" too long strings, including the song title and active
+![](https://i.imgur.com/8WJTJZS.png)
+
+#### Dynamic Cutting
+If "useDynamicMaxLengthFile" is enabled in settings.json, the "totalLengthFixed" will be ignored and the total length will instead be read from the assets\dynamicMaxLength.txt at every base step. *(For example, every time you change your scene with a hotkey, the hothey could also change the content of the file)*
