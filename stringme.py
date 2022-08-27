@@ -27,8 +27,8 @@ def checkIfProcessRunning(processName):
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
-    # print(f'{processName} is not running.')
     return False
+    
 
 def getMusicHWND():
     pidlist = []
@@ -159,7 +159,7 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
             match active:
                 case "YouTube": 
                     program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)          # These here for the "Startpages"
-                    website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'  # they have onyl the Site name and nothing more
+                    website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'  # they have only the Site name and nothing more
                     active = ""                                                                            
                 case "Twitch": 
                     program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
@@ -536,7 +536,10 @@ def main(hotkeyStatus):
                 f.write(fullHtmlString)
                 f.close() 
 
+
+                # clears the screen
                 os.system('cls')
+                #prints new info to the console
                 print("StringMe-OBS - - - Tick: " + str(tick))
                 print("-----------")
                 print("Music Status: " + musicStatus)
