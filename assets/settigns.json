@@ -40,14 +40,14 @@
         "Google": "#337AFF"
     },
     "strings": {
-        "on": " auf ",
-        "musicWord": " von ",
+        "on": " on ",
+        "musicWord": " by ",
         "musicIcon": " ",
         "musicActiveDivider": " ",
         "musicSource": "Spotify.exe",
         "musicIdle": "Spotify Premium",
-        "VSCodeUnsaved": "ungespeichert",
-        "googleSearchInYourLanguage": "Google Suche",
+        "VSCodeUnsaved": "unsaved",
+        "googleSearchInYourLanguage": "Google Search",
         "hotKey": "<shift>+<127>"
     },
     "time": {
@@ -59,6 +59,6 @@
         "musicTitle": "30",
         "cutActive": true,
         "totalLengthFixed": "125",
-        "useDynamicMaxLengthFile": true
+        "useDynamicMaxLengthFile": false
     }
 }
