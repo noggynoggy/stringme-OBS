@@ -17,8 +17,9 @@ __path = re.sub(r'\\', "/", __file__[:-11])
 with open(__path + '/assets/settigns.json', "r", encoding="utf-8") as settingsString:  
     settings = json.load(settingsString)                                    
 
+# https://thispointer.com/python-check-if-a-process-is-running-by-name-and-find-its-process-id-pid/
 def checkIfProcessRunning(processName):
-    #Iterate over the all the running process
+    #Iterate over the all the running process 
     for proc in psutil.process_iter():
         try:
             # Check if process name contains the given name string.
@@ -27,8 +28,7 @@ def checkIfProcessRunning(processName):
                 return True
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             pass
-    return False
-    
+    return False 
 
 def getMusicHWND():
     pidlist = []
@@ -147,85 +147,128 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
 
     endString = re.sub(r'(.*)( [—-] )(.*)$', r'\3', active, re.UNICODE)  #.. Mozilla Firefox
 
+    # this function is used below to beautify websites 
+    # (for multiple browsers (thats why it's a function)) 
+    def websites(active, program, website):
+        match active:
+            # when you are on a Startpage, the title often just says the name of the website.
+            # Here we beautify those.
+            case "YouTube": 
+                active = ''                                                                           
+                program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)          # These here for the "Startpages"
+                website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'  # they have only the Site name and nothing more
+            case "Twitch": 
+                active = ""
+                program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                website = '<span style="color:' + settings['colors']['Twitch'] + '"> Twitch</span>'
+            case "Wikipedia": 
+                active = ""
+                program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                website = '<span style="color:' + settings['colors']['Wikipedia'] + '"> Wikipedia</span>'
+            case "Wikiwand": 
+                active = ""
+                program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                website = '<span style="color:' + settings['colors']['Wikiwand'] + '"> Wikiwand</span>'
+            case "Netflix": 
+                active = ""
+                program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                website = '<span style="color:' + settings['colors']['Netflix'] + '">ﱄ Netflix</span>'
+            case "Google": 
+                active = ""
+                program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                website = '<span style="color:' + settings['colors']['Google'] + '"> Google</span>'
+            # the _ case is for every non startpage
+            case _:
+                # Google changes Titles in diffrent languages
+                # This is to accompany this.                    
+                if website == settings['strings']['googleSearchInYourLanguage']:
+                    website = "Google Search"
+
+                match website:  
+                    # these are for "subpages", like a specific Video on YT, not just youtube.com
+                    # we have to 1. 
+                    case "Google Search": 
+                        active = re.sub(r'(.*)??- Google Suche', r'\1', active)      #???
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['Google'] + '"> Google: </span>'      
+                    case "YouTube":
+                        active = re.sub(r'(.*)??( - )+?YouTube', r'\1', active)                                     #.. The Video Title 
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)              #.. <span style="color:#ff5405"> Firefox on</span> 
+                        website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube: </span>'    #.. <span style="color:#ff2e2e"> YouTube:</span>
+                    case "Wikipedia":
+                        active = re.sub(r'(.*)??( - )+?Wikipedia', r'\1', active)
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['Wikipedia'] + '"> Wikipedia: </span>'
+                    case "Wikiwand":
+                        active = re.sub(r'(.*)??( - )+?Wikiwand', r'\1', active)
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['Wikiwand'] + '"> Wikiwand: </span>'
+                    case "Twitch":
+                        active = re.sub(r'(.*)??( - )+?Twitch', r'\1', active)   
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['Twitch'] + '"> Twitch: </span>'   
+                    case "IMDb":
+                        active = re.sub(r'(.*)??( - )+?IMDb', r'\1', active) 
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['IMDb'] + '"> IMDb: </span>' 
+                    case "Netflix":
+                        active = re.sub(r'(.*)??( - )+?Netflix', r'\1', active)
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['Netflix'] + '">ﱄ Netflix: </span>'
+                    case "HS Mittweida":
+                        active = re.sub(r'(.*)??( \| )+?', r'\1', active) 
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['HSMW'] + '"> HSMW: </span>' 
+                    case "Stack Overflow":
+                        active = re.sub(r'(.*)??( - )+?Stack Overflow', r'\1', active)  
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
+                        website = '<span style="color:' + settings['colors']['StackOverflow'] + '">  Stack Overflow: </span>'  
+                    case _: 
+                        website = ""
+        return active, program, website          
+
     # Now a fat match (switch) case. 
     # This does all the programs reordering (splitting into program)and HTML/CSS injecting 
     # For Browsers it has a nested machcase for websides
     # For IDEs/Editors it has a nested machcase for filetypes  
     match endString:   
         case "Mozilla Firefox":
-            program = re.sub(r'(.*) — Mozilla Firefox', r'<span style="color:' + settings['colors']['Firefox'] + r'"> Firefox:</span> ', active)  #.. <span style="color:#hexfromsettings"> Firefox:</span> 
-            active = re.sub(r'(.*) — Mozilla Firefox', r'\1', active)                                                                                    #.. The Video Title - YouTube
-            website = re.sub(r'(.*)( [-\|] )(.*)$', r'\3', active)                                                                                       #.. Youtube                                                                   
-            match active:
-                case "YouTube": 
-                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)          # These here for the "Startpages"
-                    website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'  # they have only the Site name and nothing more
-                    active = ""                                                                            
-                case "Twitch": 
-                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                    website = '<span style="color:' + settings['colors']['Twitch'] + '"> Twitch</span>'
-                    active = ""
-                case "Wikipedia": 
-                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                    website = '<span style="color:' + settings['colors']['Wikipedia'] + '"> Wikipedia</span>'
-                    active = ""
-                case "Wikiwand": 
-                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                    website = '<span style="color:' + settings['colors']['Wikiwand'] + '"> Wikiwand</span>'
-                    active = ""
-                case "Netflix": 
-                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                    website = '<span style="color:' + settings['colors']['Netflix'] + '">ﱄ Netflix</span>'
-                    active = ""
-                case "Google": 
-                    program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                    website = '<span style="color:' + settings['colors']['Google'] + '"> Google</span>'
-                    active = ""
-                case _:
-                    # Google changes Titles in diffrent languages
-                    # This is to accompany this.                    
-                    if website == settings['strings']['googleSearchInYourLanguage']:
-                        website = "Google Search"
+            # taking the "Mozilla Firefox" out of active
+            active = re.sub(r'(.*) [—-] Mozilla Firefox', r'\1', active)                                #.. The Video Title - YouTube
 
-                    match website:
-                        case "Google Search": 
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??- Google Suche', r'\1', active)      
-                            website = '<span style="color:' + settings['colors']['Google'] + '"> Google: </span>'      
-                        case "YouTube":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)              #.. <span style="color:#ff5405"> Firefox on</span> 
-                            active = re.sub(r'(.*)??( - )+?YouTube', r'\1', active)                                     #.. The Video Title 
-                            website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube: </span>'    #.. <span style="color:#ff2e2e"> YouTube:</span>
-                        case "Wikipedia":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??( - )+?Wikipedia', r'\1', active)
-                            website = '<span style="color:' + settings['colors']['Wikipedia'] + '"> Wikipedia: </span>'
-                        case "Wikiwand":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??( - )+?Wikiwand', r'\1', active)
-                            website = '<span style="color:' + settings['colors']['Wikiwand'] + '"> Wikiwand: </span>'
-                        case "Twitch":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??( - )+?Twitch', r'\1', active)   
-                            website = '<span style="color:' + settings['colors']['Twitch'] + '"> Twitch: </span>'   
-                        case "IMDb":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??( - )+?IMDb', r'\1', active) 
-                            website = '<span style="color:' + settings['colors']['IMDb'] + '"> IMDb: </span>' 
-                        case "Netflix":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??( - )+?Netflix', r'\1', active)
-                            website = '<span style="color:' + settings['colors']['Netflix'] + '">ﱄ Netflix: </span>'
-                        case "HS Mittweida":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??( \| )+?', r'\1', active) 
-                            website = '<span style="color:' + settings['colors']['HSMW'] + '"> HSMW: </span>' 
-                        case "Stack Overflow":
-                            program = re.sub(r'Firefox:', r'Firefox' + settings['strings']['on'], program)
-                            active = re.sub(r'(.*)??( - )+?Stack Overflow', r'\1', active)  
-                            website = '<span style="color:' + settings['colors']['StackOverflow'] + '">  Stack Overflow: </span>'  
-                        case _: 
-                            website = ""
+            # setting program. With HTML                                                                
+            program = '<span style="color:' + settings['colors']['Firefox'] + '"> Firefox: </span>'    #.. <span style="color:#hexfromsettings"> Firefox:</span> 
+
+            # setting website. WithOUT HTML                                                                
+            website = re.sub(r'(.*)( [-\|] )(.*)$', r'\3', active)                                      #.. Youtube
+
+            # this calls the function and then saves the variables "back" from the 
+            # touple, the funtion returns, to the 3 variables                                                                                                                                                     
+            websitesTouple = websites(active, program, website) 
+            active = websitesTouple[0]                                                                             
+            program = websitesTouple[1]  
+            website = websitesTouple[2]
+        case "Google Chrome":
+            active = re.sub(r'(.*) [—-] Google Chrome', r'\1', active)                                  
+            program = '<span style="color:' + settings['colors']['Chrome'] + '"> Chrome: </span>'        
+            website = re.sub(r'(.*)( [-\|] )(.*)$', r'\3', active)                                                                                                          
+            websitesTouple = websites(active, program, website)
+            active = websitesTouple[0]                                                                             
+            program = websitesTouple[1]  
+            website = websitesTouple[2]
+        case "Microsoft​ Edge": # ← wierd unicode stuff in there
+            # active = re.sub(r'(.*)( and [0-9] more pages?)? - (Personal)?(\[Guest\])? - Microsoft​ Edge', r'\1', active) 
+            # For some reason this ↑ line doesn't cut the "and more pages" stuff.
+            # Therefore I botched this double re.sub() with an if re.match() together
+            active = re.sub(r'(.*) - (Personal)?(\[Guest\])? - Microsoft​ Edge', r'\1', active) 
+            if re.match(r'.* and [0-9]+ more pages?', active):
+                active = re.sub(r'(.*)( and [0-9] more pages?)', r'\1', active)
+            program = '<span style="color:' + settings['colors']['Edge'] + '"> Edge: </span>'        
+            website = re.sub(r'(.*)( [-\|] )(.*)$', r'\3', active)                                                                                                          
+            websitesTouple = websites(active, program, website)
+            active = websitesTouple[0]                                                                             
+            program = websitesTouple[1]  
+            website = websitesTouple[2]
         case "Adobe Acrobat Reader DC (64-bit)":
             program = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'<span style="color:' + settings['colors']['AdobeAcrobatReaderDC'] + r'"> Acrobat:</span> ', active)
             active = re.sub(r'(.*) - Adobe Acrobat Reader DC \(64-bit\)', r'\1', active)

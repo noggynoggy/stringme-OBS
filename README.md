@@ -8,7 +8,7 @@
 This is windows only. 
 
 ## Currently implemented are:
-* Firefox
+* Firefox, Google Chrome, MS Edge
   - Google.com, YouTube.com, Twitch.tv , Wikipedia.org + Wikiwand.com, IMDb.com, hs-mittweida.de, Netflix.com, StackOverflow.com
 * Discord
 * Visual Studio Code
@@ -95,4 +95,4 @@ there are options in settings.json to "cut short" too long strings, including th
 If "useDynamicMaxLengthFile" is enabled in settings.json, the "totalLengthFixed" will be ignored and the total length will instead be read from the assets\dynamicMaxLength.txt at every base step. *(For example, every time you change your scene with a hotkey, the hothey could also change the content of the file)*
 
 ### Hotkey pressed when a new song comes on
-The program autoatically presses a HotKey when a new song comes on. You can use this for all sorts of effects in OBS. *(I use it to display the cover image momentarily with tuna)*. By deafult the hotkey is `Alt`+`F15`. This is hardcoded, you can change it in `stringme.py` at lines 473-479, or just comment the section out if yo deem it unnecessary.
+The program autoatically presses a HotKey when a new song comes on. You can use this for all sorts of effects in OBS. *(I use it to display the cover image momentarily with tuna)*. By deafult the hotkey is `Alt`+`F15`. This is hardcoded, you can change it in `stringme.py` at lines 516-521, or just comment the section out if yo deem it unnecessary.
