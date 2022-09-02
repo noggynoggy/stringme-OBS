@@ -156,7 +156,7 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
             case "YouTube": 
                 active = ''                                                                           
                 program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)          # These here for the "Startpages"
-                website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'  # they have only the Site name and nothing more
+                website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube</span>'                # they have only the Site name and nothing more
             case "Twitch": 
                 active = ""
                 program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
@@ -188,13 +188,13 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
                     # these are for "subpages", like a specific Video on YT, not just youtube.com
                     # we have to 1. 
                     case "Google Search": 
-                        active = re.sub(r'(.*)??- Google Suche', r'\1', active)      #???
+                        active = re.sub(r'(.*)??- ' + settings['strings']['googleSearchInYourLanguage'], r'\1', active)
                         program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
                         website = '<span style="color:' + settings['colors']['Google'] + '"> Google: </span>'      
                     case "YouTube":
-                        active = re.sub(r'(.*)??( - )+?YouTube', r'\1', active)                                     #.. The Video Title 
-                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)              #.. <span style="color:#ff5405"> Firefox on</span> 
-                        website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube: </span>'    #.. <span style="color:#ff2e2e"> YouTube:</span>
+                        active = re.sub(r'(.*)??( - )+?YouTube', r'\1', active)                                         #.. The Video Title 
+                        program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)    #.. <span style="color:#ff5405"> Firefox on</span> 
+                        website = '<span style="color:' + settings['colors']['YouTube'] + '"> YouTube: </span>'        #.. <span style="color:#ff2e2e"> YouTube:</span>
                     case "Wikipedia":
                         active = re.sub(r'(.*)??( - )+?Wikipedia', r'\1', active)
                         program = re.sub(r'(.*): </span>', r'\1' + settings['strings']['on'] + r' </span>', program)
