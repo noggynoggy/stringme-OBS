@@ -57,6 +57,14 @@ def getMusicTouple(musicHwnd):
     # and split it into the variables artist and title
     # the comments to the side stering with #.. are an example what happens to a string at each step.
     musicWindowTitle = GetWindowText(musicHwnd)                                             #.. Amy Lee - Speak to Me (From "Voice from the Stone" Original Motion Picture Soundtrack)
+
+    # Since we work with HTLM later on, "<" have to be protcted
+    # We also count for knowing "where to cut" later
+    lessThansReplacedMusic = 0
+    lessThansReplacedMusic = musicWindowTitle.count('<')
+    if lessThansReplacedMusic != 0:
+        musicWindowTitle = re.sub(r'([^\\])<', r'\1&lt;', musicWindowTitle)
+
     if musicWindowTitle == settings['strings']['musicIdle'] or musicWindowTitle == "":
         return "", "", ""
     else:   
@@ -89,9 +97,9 @@ def getMusicTouple(musicHwnd):
         title = '<span style="color:' + settings['colors']['musicTitle'] + '">' + title + '</span>'
              
         # returns touple
-        return title, artist, musicWindowTitle
+        return title, artist, musicWindowTitle, lessThansReplacedMusic
 
-def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
+def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus, lessThansReplacedMusic):
     # This function is to return stuff related to the currently activated window.
     # (The Active window is the one "marked" on the taskbar)
     # It also reorders and "beautifies" by "injecting" HTML/CSS and icons in the strings.
@@ -108,6 +116,13 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
     # Sets active to the active window Title (String)
     active = GetWindowText(GetForegroundWindow()) 
     activeWindowTextUntouched = active                    
+
+    # Since we work with HTLM later on, "<" have to be protcted
+    # We also count for knowing "where to cut" later
+    lessThansReplaced = 0
+    lessThansReplaced = active.count('<')
+    if lessThansReplaced != 0:
+        active = re.sub(r'([^\\])<', r'\1&lt;', active)
 
     # Now to the reordering and beautifying.
     # First there are some general things that I just "cut short" 
@@ -346,14 +361,14 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
         if doMusicRightNow and hotkeyStatus.value < 3: # hotkeyStatus 3 and 4 have both no music
             if program == "":
                 # cut enabled, Music, no Program  
-                stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider'])
+                stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider']) + lessThansReplaced*3 + lessThansReplacedMusic*3
             else:
                 if website == "":
                     # cut enabled, Music, Program, no Website  
-                    stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider']) + len(program)-35
+                    stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider']) + len(program)-35 + lessThansReplaced*3 + lessThansReplacedMusic*3
                 else: 
                     # cut enabled, Music, Program, Website  
-                    stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider']) + len(program)-35 + len(website)-35    
+                    stuffBeforeActiveLenght = len(settings['strings']['musicIcon']) + len(musicToupleOld[0])-35 + len(settings['strings']['musicWord']) + len(musicToupleOld[1])-35 + len(settings['strings']['musicActiveDivider']) + len(program)-35 + len(website)-35 + lessThansReplaced*3 + lessThansReplacedMusic*3 
         else:
             if program == "":
                 # cut enabled, no Music, no Program 
@@ -361,10 +376,10 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
             else:
                 if website == "":
                     # cut enabled, no Music, Program, no Website
-                    stuffBeforeActiveLenght = len(program)-35 
+                    stuffBeforeActiveLenght = len(program)-35 + lessThansReplaced*3 + lessThansReplacedMusic*3
                 else:
                     # cut enabled, no Music, Program, Website
-                    stuffBeforeActiveLenght = len(program)-35 + len(website)-35
+                    stuffBeforeActiveLenght = len(program)-35 + len(website)-35 + lessThansReplaced*3 + lessThansReplacedMusic*3
 
 
         # This does the Dynamic Max Length File "getting" 
@@ -389,6 +404,7 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
     # So they are beautifyed here 
     active = re.sub(r'^(OBS ).*', r'<span style="color:' + settings['colors']['OBS'] + r'"> OBS</span>', active)
     active = re.sub('Joplin', '<span style="color:' + settings['colors']['Joplin'] + '"> Joplin</span>', active)
+    active = re.sub('Discord', '<span style="color:' + settings['colors']['Discord'] + '">ﭮ Discord</span>', active)
     active = re.sub('Mozilla Firefox', '<span style="color:' + settings['colors']['Firefox'] + '"> Firefox</span>', active) # start page
     active = re.sub('PowerShell Core', '<span style="color:' + settings['colors']['PowerShellCore'] + '"> PowerShell Core</span>', active) 
     active = re.sub(r'(Select )?Python 3.[0-9][0-9]? \(64-bit\)', r'<span style="color:' + settings['colors']['Python3'] + r'"> Python 3</span>', active) 
@@ -406,7 +422,7 @@ def getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus):
         active = ""
 
     # returns touple 
-    return program, active, website, unsavedMark, activeWindowTextUntouched, isActiveCutString 
+    return program, active, website, unsavedMark, activeWindowTextUntouched, isActiveCutString
 
 # https://pynput.readthedocs.io/en/latest/keyboard.html
 def hotkey(hotkeyStatus):
@@ -494,6 +510,7 @@ def main(hotkeyStatus):
                     title = musicTouple[0]
                     artist = musicTouple[1]
                     musicWindowTitle = musicTouple[2]
+                    lessThansReplacedMusic = musicTouple[3]
                     
                     # if the music is idle, make all music related strings empty
                     if artist == "" and title == "":
@@ -532,11 +549,10 @@ def main(hotkeyStatus):
             for y in range(settings['time']['musicTickRate']):                 
                 time.sleep(settings['time']['baseTickRate'])  
 
-                
                 # This is the same thing as up there the getMusicTouple
                 # but with Active this time. 
                 if hotkeyStatus.value % 2 == 1: # 1 and 3 are with active
-                    activeTouple = getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus)
+                    activeTouple = getActiveTouple(musicToupleOld, doMusicRightNow, hotkeyStatus, lessThansReplacedMusic)
                     program = activeTouple[0]
                     active = activeTouple[1]
                     website = activeTouple[2]
@@ -604,7 +620,7 @@ def main(hotkeyStatus):
                 tick += 1
 
     except Exception as e:
-        f = open("assets/errorlog.txt", "a")
+        f = open(__path + "assets/errorlog.txt", "a")
         f.write(str(datetime.now()) + "\n" + str(e))
         f.write('\n\n')
         f.close()               
